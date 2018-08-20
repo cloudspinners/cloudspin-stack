@@ -6,10 +6,9 @@ module Cloudspin
 
       attr_reader :instance_parameter_names, :required_resource_names, :terraform_source_path
 
-      def initialize( terraform_source_path: '',
-                      instance_parameter_names: [],
-                      required_resource_names: []
-                    )
+      def initialize(terraform_source_path: '',
+                     instance_parameter_names: [],
+                     required_resource_names: [])
         @terraform_source_path = terraform_source_path
         @instance_parameter_names = instance_parameter_names
         @required_resource_names = required_resource_names
