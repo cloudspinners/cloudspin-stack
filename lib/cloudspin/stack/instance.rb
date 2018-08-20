@@ -32,10 +32,11 @@ module Cloudspin
         mkdir_p File.dirname(working_folder)
         cp_r @stack_definition.terraform_source_path, working_folder
         Dir.chdir(working_folder) do
-        RubyTerraform.init(backend_config: backend_config)
-        RubyTerraform.plan(
-          state: terraform_statefile,
-          vars: terraform_variables)
+          RubyTerraform.init(backend_config: backend_config)
+          RubyTerraform.plan(
+            state: terraform_statefile,
+            vars: terraform_variables
+          )
         end
       end
 
@@ -49,6 +50,34 @@ module Cloudspin
         configured_command = plan_command.configure_command(command_line_builder, options)
         built_command = configured_command.build
         built_command.to_s
+      end
+
+      def up
+        RubyTerraform.clean(directory: working_folder)
+        mkdir_p File.dirname(working_folder)
+        cp_r @stack_definition.terraform_source_path, working_folder
+        Dir.chdir(working_folder) do
+          RubyTerraform.init(backend_config: backend_config)
+          RubyTerraform.apply(
+            auto_approve: true,
+            state: terraform_statefile,
+            vars: terraform_variables
+          )
+        end
+      end
+
+      def down
+        RubyTerraform.clean(directory: working_folder)
+        mkdir_p File.dirname(working_folder)
+        cp_r @stack_definition.terraform_source_path, working_folder
+        Dir.chdir(working_folder) do
+          RubyTerraform.init(backend_config: backend_config)
+          RubyTerraform.destroy(
+            force: true,
+            state: terraform_statefile,
+            vars: terraform_variables
+          )
+        end
       end
 
       def terraform_variables

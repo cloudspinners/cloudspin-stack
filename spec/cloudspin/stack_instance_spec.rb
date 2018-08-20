@@ -36,7 +36,8 @@ RSpec.describe 'Stack instance' do
       working_folder: working_folder,
       statefile_folder: statefile_folder,
       instance_parameter_values: instance_parameter_values,
-      required_resource_values: required_resource_values)
+      required_resource_values: required_resource_values
+    )
   }
 
   it 'is planned without error' do
