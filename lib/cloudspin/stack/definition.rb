@@ -18,7 +18,8 @@ module Cloudspin
       def self.from_file(specfile)
         spec_hash = YAML.load_file(specfile)
         stack_spec = symbolize(spec_hash)
-        self.new(terraform_source_path: 'todo', **stack_spec)
+        terraform_source_path = File.dirname(specfile)
+        self.new(terraform_source_path: terraform_source_path, **stack_spec)
       end
 
       private

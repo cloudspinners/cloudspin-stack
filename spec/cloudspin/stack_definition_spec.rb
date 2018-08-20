@@ -46,33 +46,6 @@ RSpec.describe 'Stack defined from code' do
 end
 
 
-RSpec.describe 'Stack defined from code with splat' do
-
-  let(:stack_definition) {
-    spec_hash = {
-      :instance_parameter_names => [ 'a', 'b'],
-      :required_resource_names => [ 'x', 'y' ]
-    }
-    Cloudspin::Stack::Definition.new(
-      terraform_source_path: 'some/path', **spec_hash
-    )
-  }
-
-  it 'has the expected terraform source path' do
-    expect(stack_definition.terraform_source_path).to eq('some/path')
-  end
-
-  it 'has the instance parameter names passed from code' do
-    expect(stack_definition.instance_parameter_names).to contain_exactly('a', 'b')
-  end
-
-  it 'has the required resource names passed from code' do
-    expect(stack_definition.required_resource_names).to contain_exactly('x', 'y')
-  end
-
-end
-
-
 RSpec.describe 'Stack defined from yaml spec file' do
 
   let(:yaml_file) {
@@ -94,6 +67,10 @@ RSpec.describe 'Stack defined from yaml spec file' do
   let(:stack_definition) {
     Cloudspin::Stack::Definition.from_file(yaml_file)
   }
+
+  it 'has assumed the terraform path from the yaml file location' do
+    expect(stack_definition.terraform_source_path).to eq(File.dirname(yaml_file))
+  end
 
   it 'has the instance parameter names defined in the yaml file' do
     expect(stack_definition.instance_parameter_names).to contain_exactly('foo', 'bar')
