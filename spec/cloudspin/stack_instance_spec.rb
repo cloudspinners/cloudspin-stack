@@ -36,7 +36,7 @@ RSpec.describe 'Stack instance' do
   end
 
   it 'returns a reasonable-looking command line for plan_dry' do
-    expect( stack_instance.plan_dry ).to match(/terraform plan -var/)
+    expect( stack_instance.plan_command ).to match(/terraform plan -var/)
   end
 
 end

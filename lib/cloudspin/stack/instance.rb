@@ -33,7 +33,7 @@ module Cloudspin
         end
       end
 
-      def plan_dry
+      def plan_command
         options = {
           :state => terraform_statefile,
           :vars => terraform_variables
@@ -42,7 +42,6 @@ module Cloudspin
         command_line_builder = plan_command.instantiate_builder
         configured_command = plan_command.configure_command(command_line_builder, options)
         built_command = configured_command.build
-puts "KSM: built_command = #{built_command}"
         built_command.to_s
       end
 
