@@ -11,20 +11,32 @@ RSpec.describe 'Stack instance' do
     Cloudspin::Stack::Definition.new(terraform_source_path: source_folder)
   }
 
-  let(:working_folder) { 
-    Dir.mktmpdir
+  let(:working_folder) { Dir.mktmpdir }
+
+  let(:statefile_folder) { Dir.mktmpdir }
+
+  let(:variable_values) {
+    {
+      'something' => 'this',
+      'another' => 'that'
+    }
   }
 
   let(:stack_instance) {
     Cloudspin::Stack::Instance.new(
       stack_definition: stack_definition,
       backend_config: {},
-      working_folder: working_folder
-    )
+      working_folder: working_folder,
+      statefile_folder: statefile_folder,
+      variable_values: variable_values)
   }
 
   it 'is planned without error' do
     expect { stack_instance.plan }.not_to raise_error
+  end
+
+  it 'returns a reasonable-looking command line for plan_dry' do
+    expect( stack_instance.plan_dry ).to match(/terraform plan -var/)
   end
 
 end

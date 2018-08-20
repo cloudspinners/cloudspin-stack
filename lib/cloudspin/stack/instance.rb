@@ -7,14 +7,18 @@ module Cloudspin
 
       include FileUtils
 
-      attr_reader :working_folder, :backend_config
+      attr_reader :working_folder, :backend_config, :statefile_folder
 
       def initialize(stack_definition:,
                      backend_config:,
-                     working_folder:)
+                     working_folder:,
+                     statefile_folder:,
+                     variable_values: {})
         @stack_definition = stack_definition
         @backend_config = backend_config
         @working_folder = working_folder
+        @statefile_folder = statefile_folder
+        @variable_values = variable_values
       end
 
       def plan
@@ -24,9 +28,22 @@ module Cloudspin
         Dir.chdir(working_folder) do
         RubyTerraform.init(backend_config: backend_config)
         RubyTerraform.plan(
-          # state: terraform_statefile,
+          state: terraform_statefile,
           vars: terraform_variables)
         end
+      end
+
+      def plan_dry
+        options = {
+          :state => terraform_statefile,
+          :vars => terraform_variables
+        }
+        plan_command = RubyTerraform::Commands::Plan.new
+        command_line_builder = plan_command.instantiate_builder
+        configured_command = plan_command.configure_command(command_line_builder, options)
+        built_command = configured_command.build
+puts "KSM: built_command = #{built_command}"
+        built_command.to_s
       end
 
       # def up
@@ -39,11 +56,11 @@ module Cloudspin
       # end
 
       def terraform_variables
-        {}
+        @variable_values
       end
 
       def terraform_statefile
-        ''
+        statefile_folder + "/default_name.tfstate"
       end
 
     end
