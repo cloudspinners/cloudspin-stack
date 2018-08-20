@@ -15,10 +15,17 @@ RSpec.describe 'Stack instance' do
 
   let(:statefile_folder) { Dir.mktmpdir }
 
-  let(:variable_values) {
+  let(:instance_parameter_values) {
     {
-      'something' => 'this',
-      'another' => 'that'
+      'x' => '9',
+      'y' => '8'
+    }
+  }
+
+  let(:required_resource_values) {
+    {
+      'a' => '1',
+      'b' => '2'
     }
   }
 
@@ -28,7 +35,8 @@ RSpec.describe 'Stack instance' do
       backend_config: {},
       working_folder: working_folder,
       statefile_folder: statefile_folder,
-      variable_values: variable_values)
+      instance_parameter_values: instance_parameter_values,
+      required_resource_values: required_resource_values)
   }
 
   it 'is planned without error' do
@@ -36,7 +44,17 @@ RSpec.describe 'Stack instance' do
   end
 
   it 'returns a reasonable-looking plan command' do
-    expect( stack_instance.plan_command ).to match(/terraform plan -var/)
+    expect( stack_instance.plan_command ).to match(/terraform plan/)
+  end
+
+  it 'includes the instance parameters in the terraform command' do
+    expect( stack_instance.plan_command ).to match(/-var 'x=9'/)
+    expect( stack_instance.plan_command ).to match(/-var 'y=8'/)
+  end
+
+  it 'includes the required resources in the terraform command' do
+    expect( stack_instance.plan_command ).to match(/-var 'a=1'/)
+    expect( stack_instance.plan_command ).to match(/-var 'b=2'/)
   end
 
 end

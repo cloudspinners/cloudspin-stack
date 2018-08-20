@@ -7,18 +7,24 @@ module Cloudspin
 
       include FileUtils
 
-      attr_reader :working_folder, :backend_config, :statefile_folder
+      attr_reader :working_folder,
+          :backend_config,
+          :statefile_folder,
+          :instance_parameter_values,
+          :required_resource_values
 
       def initialize(stack_definition:,
                      backend_config:,
                      working_folder:,
                      statefile_folder:,
-                     variable_values: {})
+                     instance_parameter_values: {},
+                     required_resource_values: {})
         @stack_definition = stack_definition
         @backend_config = backend_config
         @working_folder = working_folder
         @statefile_folder = statefile_folder
-        @variable_values = variable_values
+        @instance_parameter_values = instance_parameter_values
+        @required_resource_values = required_resource_values
       end
 
       def plan
@@ -45,17 +51,10 @@ module Cloudspin
         built_command.to_s
       end
 
-      # def up
-      # end
-
-      # def down
-      # end
-
-      # def status
-      # end
-
       def terraform_variables
-        @variable_values
+        @instance_parameter_values.merge(@required_resource_values) { |key, oldval, newval|
+          raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
+        }
       end
 
       def terraform_statefile
