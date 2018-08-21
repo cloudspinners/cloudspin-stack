@@ -103,6 +103,17 @@ module Cloudspin
         end
       end
 
+      def down_dry
+        down_command = RubyTerraform::Commands::Destroy.new
+        command_line_builder = down_command.instantiate_builder
+        configured_command = down_command.configure_command(command_line_builder, {
+          :state => terraform_statefile,
+          :vars => terraform_variables
+        })
+        built_command = configured_command.build
+        built_command.to_s
+      end
+
       def terraform_variables
         @parameter_values.merge(@resource_values) { |key, oldval, newval|
           raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"

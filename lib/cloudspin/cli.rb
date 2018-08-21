@@ -54,8 +54,13 @@ module Cloudspin
     end
 
     desc 'down', 'Destroy the stack instance'
+    option :dry, :type => :boolean, :default => false
     def down
-      instance.down
+      if options[:dry]
+        puts instance.down_dry
+      else
+        instance.down
+      end
     end
 
     desc 'version', 'Print the version number'
