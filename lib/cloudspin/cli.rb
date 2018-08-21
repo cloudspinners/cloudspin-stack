@@ -45,9 +45,12 @@ module Cloudspin
 
     desc 'up', 'Create or update the stack instance'
     option :dry, :type => :boolean, :default => false
+    option :plan, :type => :boolean, :default => false
     def up
       if options[:dry]
         puts instance.up_dry
+      elsif options[:plan]
+        puts instance.plan
       else
         instance.up
       end
