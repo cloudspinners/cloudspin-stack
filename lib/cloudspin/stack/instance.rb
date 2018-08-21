@@ -53,14 +53,13 @@ module Cloudspin
         end
       end
 
-      def plan_command
-        options = {
-          :state => terraform_statefile,
-          :vars => terraform_variables
-        }
+      def plan_dry
         plan_command = RubyTerraform::Commands::Plan.new
         command_line_builder = plan_command.instantiate_builder
-        configured_command = plan_command.configure_command(command_line_builder, options)
+        configured_command = plan_command.configure_command(command_line_builder, {
+          :state => terraform_statefile,
+          :vars => terraform_variables
+        })
         built_command = configured_command.build
         built_command.to_s
       end
@@ -77,6 +76,17 @@ module Cloudspin
             vars: terraform_variables
           )
         end
+      end
+
+      def up_dry
+        up_command = RubyTerraform::Commands::Apply.new
+        command_line_builder = up_command.instantiate_builder
+        configured_command = up_command.configure_command(command_line_builder, {
+          :state => terraform_statefile,
+          :vars => terraform_variables
+        })
+        built_command = configured_command.build
+        built_command.to_s
       end
 
       def down

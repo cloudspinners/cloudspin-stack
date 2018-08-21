@@ -46,17 +46,17 @@ RSpec.describe 'Stack instance' do
   end
 
   it 'returns a reasonable-looking plan command' do
-    expect( stack_instance.plan_command ).to match(/terraform plan/)
+    expect( stack_instance.plan_dry ).to match(/terraform plan/)
   end
 
   it 'includes the instance parameters in the terraform command' do
-    expect( stack_instance.plan_command ).to match(/-var 'x=9'/)
-    expect( stack_instance.plan_command ).to match(/-var 'y=8'/)
+    expect( stack_instance.plan_dry ).to match(/-var 'x=9'/)
+    expect( stack_instance.plan_dry ).to match(/-var 'y=8'/)
   end
 
   it 'includes the required resources in the terraform command' do
-    expect( stack_instance.plan_command ).to match(/-var 'a=1'/)
-    expect( stack_instance.plan_command ).to match(/-var 'b=2'/)
+    expect( stack_instance.plan_dry ).to match(/-var 'a=1'/)
+    expect( stack_instance.plan_dry ).to match(/-var 'b=2'/)
   end
 
 end

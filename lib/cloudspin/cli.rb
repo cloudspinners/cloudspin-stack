@@ -2,41 +2,55 @@ require 'thor'
 require 'cloudspin/stack'
 
 module Cloudspin
+
   class CLI < Thor
 
     class_option :file,
       :aliases => '-f',
       :banner => 'YAML-CONFIG-FILE',
       :type => :array,
-      :default => [ 'spin-default.yaml', 'spin-local.yaml' ],
+      :default => [
+        Util.full_path_to('spin-default.yaml'),
+        Util.full_path_to('spin-local.yaml')
+      ],
       :desc => 'A list of configuration files to load for the stack instance. Values in files listed later override those from earlier files.'
 
     class_option :terraform_source,
       :aliases => '-t',
       :banner => 'PATH',
-      :default => './src',
+      :default => Util.full_path_to('./src'),
       :desc => 'Folder with the terraform project source files'
 
     class_option :work,
       :aliases => '-w',
       :banner => 'PATH',
-      :default => './work',
+      :default => Util.full_path_to('./work'),
       :desc => 'Folder to create and copy working files into'
 
     class_option :state,
       :aliases => '-s',
       :banner => 'PATH',
-      :default => './state',
+      :default => Util.full_path_to('./state'),
       :desc => 'Folder to create and store local state'
 
     desc 'plan', 'Print the changes that will by applied when the \'up\' command is run'
+    option :dry, :type => :boolean, :default => false
     def plan
-      instance.plan
+      if options[:dry]
+        puts instance.plan_dry
+      else
+        instance.plan
+      end
     end
 
     desc 'up', 'Create or update the stack instance'
+    option :dry, :type => :boolean, :default => false
     def up
-      instance.up
+      if options[:dry]
+        puts instance.up_dry
+      else
+        instance.up
+      end
     end
 
     desc 'down', 'Destroy the stack instance'
@@ -80,4 +94,6 @@ module Cloudspin
     end
 
   end
+
 end
+
