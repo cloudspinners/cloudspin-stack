@@ -5,19 +5,33 @@ module Cloudspin
   class CLI < Thor
 
     class_option :file,
+      :aliases => '-f',
       :banner => 'YAML-CONFIG-FILE',
       :type => :array,
       :default => [ 'spin-default.yaml', 'spin-local.yaml' ],
       :desc => 'A list of configuration files to load for the stack instance. Values in files listed later override those from earlier files.'
 
+    class_option :terraform_source,
+      :aliases => '-t',
+      :banner => 'PATH',
+      :default => './src',
+      :desc => 'Folder with the terraform project source files'
+
+    class_option :work,
+      :aliases => '-w',
+      :banner => 'PATH',
+      :default => './work',
+      :desc => 'Folder to create and copy working files into'
+
+    class_option :state,
+      :aliases => '-s',
+      :banner => 'PATH',
+      :default => './state',
+      :desc => 'Folder to create and store local state'
+
     desc 'plan', 'Print the changes that will by applied when the \'stack up\' command is run'
     def plan
-      puts "Get configuration from #{options[:file]}" if options[:file]
-      stack = instance
-      options[:file].each { |config_file|
-        stack.add_config_from_yaml(config_file)
-      }
-      stack.plan
+      instance.plan
     end
 
     desc 'version', 'Print the version number'
@@ -33,32 +47,20 @@ module Cloudspin
     no_commands do
 
       def instance
-        Cloudspin::Stack::Instance.new(
+        stack = Cloudspin::Stack::Instance.new(
           stack_definition: stack_definition,
           backend_config: {},
-          working_folder: working_folder,
-          statefile_folder: statefile_folder
+          working_folder: options[:work],
+          statefile_folder: options[:state]
         )
+        options[:file].each { |config_file|
+          stack.add_config_from_yaml(config_file)
+        }
+        stack
       end
 
       def stack_definition
-        Cloudspin::Stack::Definition.from_file(terraform_source_folder + '/stack.yaml')
-      end
-
-      def stack_project_folder
-        Pathname.new(Dir.pwd).realpath.to_s
-      end
-
-      def terraform_source_folder
-        Pathname.new(stack_project_folder + '/src').realpath.to_s
-      end
-
-      def working_folder
-        Pathname.new(stack_project_folder + '/work').realpath.to_s
-      end
-
-      def statefile_folder
-        Pathname.new(stack_project_folder + '/state').realpath.to_s
+        Cloudspin::Stack::Definition.from_file(options[:terraform_source] + '/stack.yaml')
       end
 
     end
