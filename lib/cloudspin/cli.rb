@@ -4,21 +4,25 @@ require 'cloudspin/stack'
 module Cloudspin
   class CLI < Thor
 
+    class_option :file
+
     desc 'plan', 'Print the changes that will by applied when the \'stack up\' command is run'
     def plan
+      puts "Get configuration from #{options[:file]}" if options[:file]
       instance.plan
     end
 
     no_commands do
+
       def instance
         Cloudspin::Stack::Instance.new(
           stack_definition: stack_definition,
           backend_config: {},
           working_folder: working_folder,
-          statefile_folder: statefile_folder,
-          parameter_values: parameter_values,
-          resource_values: resource_values
+          statefile_folder: statefile_folder
         )
+        # parameter_values: parameter_values
+        # resource_values: resource_values
       end
 
       def stack_definition
