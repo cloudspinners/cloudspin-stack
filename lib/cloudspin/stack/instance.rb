@@ -34,6 +34,12 @@ module Cloudspin
         @resource_values.merge!(new_resource_values)
       end
 
+      def add_config_from_yaml(yaml_file)
+        config = YAML.load_file(yaml_file) || {}
+        add_parameter_values(config['parameters']) if config['parameters']
+        add_resource_values(config['resources']) if config['resources']
+      end
+
       def plan
         RubyTerraform.clean(directory: working_folder)
         mkdir_p File.dirname(working_folder)
