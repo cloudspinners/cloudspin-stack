@@ -33,24 +33,16 @@ module Cloudspin
       :default => Util.full_path_to('./state'),
       :desc => 'Folder to create and store local state'
 
-    desc 'plan', 'Print the changes that will by applied when the \'up\' command is run'
-    option :dry, :type => :boolean, :default => false
-    def plan
-      if options[:dry]
-        puts instance.plan_dry
-      else
-        instance.plan
-      end
-    end
-
     desc 'up', 'Create or update the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
     def up
-      if options[:dry]
-        puts instance.up_dry
-      elsif options[:plan]
+      if options[:plan] && options[:dry]
+        puts instance.plan_dry
+      elsif options[:plan] && ! options[:dry]
         puts instance.plan
+      elsif ! options[:plan] && options[:dry]
+        puts instance.up_dry
       else
         instance.up
       end
