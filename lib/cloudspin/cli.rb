@@ -4,14 +4,26 @@ require 'cloudspin/stack'
 module Cloudspin
   class CLI < Thor
 
-    class_option :file
+    class_option :file, :banner => 'YAML-CONFIG-FILE', :type => :array
 
     desc 'plan', 'Print the changes that will by applied when the \'stack up\' command is run'
     def plan
       puts "Get configuration from #{options[:file]}" if options[:file]
       stack = instance
-      stack.add_config_from_yaml if options[:file]
+      options[:file].each { |config_file|
+        stack.add_config_from_yaml(config_file)
+      }
       stack.plan
+    end
+
+    desc 'version', 'Print the version number'
+    def version
+      puts "cloudspin-stack: #{Cloudspin::Stack::VERSION}"
+    end
+
+    desc 'info', 'Print some info about arguments, for debugging'
+    def info
+      puts "Configuration file: #{options[:file]}"
     end
 
     no_commands do
@@ -23,8 +35,6 @@ module Cloudspin
           working_folder: working_folder,
           statefile_folder: statefile_folder
         )
-        # parameter_values: parameter_values
-        # resource_values: resource_values
       end
 
       def stack_definition
@@ -46,41 +56,6 @@ module Cloudspin
       def statefile_folder
         Pathname.new(stack_project_folder + '/state').realpath.to_s
       end
-
-      # def parameter_values
-      #   {
-      #     'deployment_identifier' => 'my_env',
-      #     'component' => 'my_component',
-      #     'estate' => 'my_estate',
-      #     'base_dns_domain' => 'my_domain'
-      #   }
-      # end
-
-      # def resource_values
-      #   {
-      #     'assume_role_arn' => assume_role_arn
-      #   }
-      # end
-
-      # def assume_role_arn
-      #   configuration['assume_role_arn']
-      # end
-
-      # def configuration
-      #   @config ||= load_config
-      # end
-
-      # def load_config
-      #   default_config.merge(local_config)
-      # end
-
-      # def local_config
-      #   YAML.load_file(stack_project_folder + '/spin-local.yaml') || {}
-      # end
-
-      # def default_config
-      #   YAML.load_file(stack_project_folder + '/spin-default.yaml') || {}
-      # end
 
     end
 
