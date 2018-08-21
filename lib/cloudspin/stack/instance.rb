@@ -16,15 +16,22 @@ module Cloudspin
       def initialize(stack_definition:,
                      backend_config:,
                      working_folder:,
-                     statefile_folder:,
-                     parameter_values: {},
-                     resource_values: {})
+                     statefile_folder:
+                    )
         @stack_definition = stack_definition
         @backend_config = backend_config
         @working_folder = working_folder
         @statefile_folder = statefile_folder
-        @parameter_values = parameter_values
-        @resource_values = resource_values
+        @parameter_values = {}
+        @resource_values = {}
+      end
+
+      def add_parameter_values(new_parameter_values)
+        @parameter_values.merge!(new_parameter_values)
+      end
+
+      def add_resource_values(new_resource_values)
+        @resource_values.merge!(new_resource_values)
       end
 
       def plan

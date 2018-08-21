@@ -30,14 +30,15 @@ RSpec.describe 'Stack instance' do
   }
 
   let(:stack_instance) {
-    Cloudspin::Stack::Instance.new(
+    raw_instance = Cloudspin::Stack::Instance.new(
       stack_definition: stack_definition,
       backend_config: {},
       working_folder: working_folder,
-      statefile_folder: statefile_folder,
-      parameter_values: parameter_values,
-      resource_values: resource_values
+      statefile_folder: statefile_folder
     )
+    raw_instance.add_parameter_values(parameter_values)
+    raw_instance.add_resource_values(resource_values)
+    raw_instance
   }
 
   it 'is planned without error' do
