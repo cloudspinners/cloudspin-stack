@@ -9,7 +9,9 @@ module Cloudspin
     desc 'plan', 'Print the changes that will by applied when the \'stack up\' command is run'
     def plan
       puts "Get configuration from #{options[:file]}" if options[:file]
-      instance.plan
+      stack = instance
+      stack.add_config_from_yaml if options[:file]
+      stack.plan
     end
 
     no_commands do
@@ -45,40 +47,40 @@ module Cloudspin
         Pathname.new(stack_project_folder + '/state').realpath.to_s
       end
 
-      def parameter_values
-        {
-          'deployment_identifier' => 'my_env',
-          'component' => 'my_component',
-          'estate' => 'my_estate',
-          'base_dns_domain' => 'my_domain'
-        }
-      end
+      # def parameter_values
+      #   {
+      #     'deployment_identifier' => 'my_env',
+      #     'component' => 'my_component',
+      #     'estate' => 'my_estate',
+      #     'base_dns_domain' => 'my_domain'
+      #   }
+      # end
 
-      def resource_values
-        {
-          'assume_role_arn' => assume_role_arn
-        }
-      end
+      # def resource_values
+      #   {
+      #     'assume_role_arn' => assume_role_arn
+      #   }
+      # end
 
-      def assume_role_arn
-        configuration['assume_role_arn']
-      end
+      # def assume_role_arn
+      #   configuration['assume_role_arn']
+      # end
 
-      def configuration
-        @config ||= load_config
-      end
+      # def configuration
+      #   @config ||= load_config
+      # end
 
-      def load_config
-        default_config.merge(local_config)
-      end
+      # def load_config
+      #   default_config.merge(local_config)
+      # end
 
-      def local_config
-        YAML.load_file(stack_project_folder + '/spin-local.yaml') || {}
-      end
+      # def local_config
+      #   YAML.load_file(stack_project_folder + '/spin-local.yaml') || {}
+      # end
 
-      def default_config
-        YAML.load_file(stack_project_folder + '/spin-default.yaml') || {}
-      end
+      # def default_config
+      #   YAML.load_file(stack_project_folder + '/spin-default.yaml') || {}
+      # end
 
     end
 
