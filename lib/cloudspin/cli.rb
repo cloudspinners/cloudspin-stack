@@ -29,9 +29,19 @@ module Cloudspin
       :default => './state',
       :desc => 'Folder to create and store local state'
 
-    desc 'plan', 'Print the changes that will by applied when the \'stack up\' command is run'
+    desc 'plan', 'Print the changes that will by applied when the \'up\' command is run'
     def plan
       instance.plan
+    end
+
+    desc 'up', 'Create or update the stack instance'
+    def up
+      instance.up
+    end
+
+    desc 'down', 'Destroy the stack instance'
+    def down
+      instance.down
     end
 
     desc 'version', 'Print the version number'
