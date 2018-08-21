@@ -4,7 +4,11 @@ require 'cloudspin/stack'
 module Cloudspin
   class CLI < Thor
 
-    class_option :file, :banner => 'YAML-CONFIG-FILE', :type => :array
+    class_option :file,
+      :banner => 'YAML-CONFIG-FILE',
+      :type => :array,
+      :default => [ 'spin-default.yaml', 'spin-local.yaml' ],
+      :desc => 'A list of configuration files to load for the stack instance. Values in files listed later override those from earlier files.'
 
     desc 'plan', 'Print the changes that will by applied when the \'stack up\' command is run'
     def plan
