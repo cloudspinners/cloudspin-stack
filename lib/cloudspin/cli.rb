@@ -10,27 +10,27 @@ module Cloudspin
       :banner => 'YAML-CONFIG-FILE',
       :type => :array,
       :default => [
-        Util.full_path_to('spin-default.yaml'),
-        Util.full_path_to('spin-local.yaml')
+        Util.full_path_from_local('spin-default.yaml'),
+        Util.full_path_from_local('spin-local.yaml')
       ],
       :desc => 'A list of configuration files to load for the stack instance. Values in files listed later override those from earlier files.'
 
     class_option :terraform_source,
       :aliases => '-t',
       :banner => 'PATH',
-      :default => Util.full_path_to('./src'),
+      :default => Util.full_path_from_local('./src'),
       :desc => 'Folder with the terraform project source files'
 
     class_option :work,
       :aliases => '-w',
       :banner => 'PATH',
-      :default => Util.full_path_to('./work'),
+      :default => Util.full_path_from_local('./work'),
       :desc => 'Folder to create and copy working files into'
 
     class_option :state,
       :aliases => '-s',
       :banner => 'PATH',
-      :default => Util.full_path_to('./state'),
+      :default => Util.full_path_from_local('./state'),
       :desc => 'Folder to create and store local state'
 
     desc 'up', 'Create or update the stack instance'
@@ -52,10 +52,12 @@ module Cloudspin
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
     def down
-      if options[:dry]
+      if options[:plan] && options[:dry]
+        puts instance.plan_dry(plan_destroy: true)
+      elsif options[:plan] && ! options[:dry]
+        puts instance.plan(plan_destroy: true)
+      elsif ! options[:plan] && options[:dry]
         puts instance.down_dry
-      elsif options[:plan]
-        puts instance.down_plan
       else
         instance.down
       end
