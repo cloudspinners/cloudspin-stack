@@ -16,8 +16,8 @@ module Cloudspin
           backend_config: {},
           working_folder: working_folder,
           statefile_folder: statefile_folder,
-          instance_parameter_values: instance_parameter_values,
-          required_resource_values: required_resource_values
+          parameter_values: parameter_values,
+          resource_values: resource_values
         )
       end
 
@@ -41,7 +41,7 @@ module Cloudspin
         Pathname.new(stack_project_folder + '/state').realpath.to_s
       end
 
-      def instance_parameter_values
+      def parameter_values
         {
           'deployment_identifier' => 'my_env',
           'component' => 'my_component',
@@ -50,7 +50,7 @@ module Cloudspin
         }
       end
 
-      def required_resource_values
+      def resource_values
         {
           'assume_role_arn' => assume_role_arn
         }

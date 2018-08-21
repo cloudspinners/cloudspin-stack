@@ -10,21 +10,21 @@ module Cloudspin
       attr_reader :working_folder,
           :backend_config,
           :statefile_folder,
-          :instance_parameter_values,
-          :required_resource_values
+          :parameter_values,
+          :resource_values
 
       def initialize(stack_definition:,
                      backend_config:,
                      working_folder:,
                      statefile_folder:,
-                     instance_parameter_values: {},
-                     required_resource_values: {})
+                     parameter_values: {},
+                     resource_values: {})
         @stack_definition = stack_definition
         @backend_config = backend_config
         @working_folder = working_folder
         @statefile_folder = statefile_folder
-        @instance_parameter_values = instance_parameter_values
-        @required_resource_values = required_resource_values
+        @parameter_values = parameter_values
+        @resource_values = resource_values
       end
 
       def plan
@@ -81,7 +81,7 @@ module Cloudspin
       end
 
       def terraform_variables
-        @instance_parameter_values.merge(@required_resource_values) { |key, oldval, newval|
+        @parameter_values.merge(@resource_values) { |key, oldval, newval|
           raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
         }
       end

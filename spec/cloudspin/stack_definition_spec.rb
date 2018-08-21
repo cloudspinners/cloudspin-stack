@@ -11,11 +11,11 @@ RSpec.describe 'Stack defined with defaults' do
   end
 
   it 'has an empty list of instance parameter names' do
-    expect(stack_definition.instance_parameter_names).to be_empty
+    expect(stack_definition.parameter_names).to be_empty
   end
 
   it 'has an empty list of required resource_names names' do
-    expect(stack_definition.required_resource_names).to be_empty
+    expect(stack_definition.resource_names).to be_empty
   end
 
 end
@@ -26,8 +26,8 @@ RSpec.describe 'Stack defined from code' do
   let(:stack_definition) {
     Cloudspin::Stack::Definition.new(
       terraform_source_path: 'some/path',
-      instance_parameter_names: [ 'a', 'b'],
-      required_resource_names: [ 'x', 'y' ]
+      parameter_names: [ 'a', 'b'],
+      resource_names: [ 'x', 'y' ]
     )
   }
 
@@ -36,11 +36,11 @@ RSpec.describe 'Stack defined from code' do
   end
 
   it 'has the defined list of instance parameter names' do
-    expect(stack_definition.instance_parameter_names).to contain_exactly('a', 'b')
+    expect(stack_definition.parameter_names).to contain_exactly('a', 'b')
   end
 
   it 'has the defined list of required resource_names names' do
-    expect(stack_definition.required_resource_names).to contain_exactly('x', 'y')
+    expect(stack_definition.resource_names).to contain_exactly('x', 'y')
   end
 
 end
@@ -52,10 +52,10 @@ RSpec.describe 'Stack defined from yaml spec file' do
     tmp = Tempfile.new('stack_definition_spec.yaml')
     tmp.write(<<~YAML_FILE
       ---
-      instance_parameter_names:
+      parameter_names:
       - foo
       - bar
-      required_resource_names:
+      resource_names:
       - thing_one
       - thing_two
       YAML_FILE
@@ -73,11 +73,11 @@ RSpec.describe 'Stack defined from yaml spec file' do
   end
 
   it 'has the instance parameter names defined in the yaml file' do
-    expect(stack_definition.instance_parameter_names).to contain_exactly('foo', 'bar')
+    expect(stack_definition.parameter_names).to contain_exactly('foo', 'bar')
   end
 
   it 'has the required resource names defined in the yaml file' do
-    expect(stack_definition.required_resource_names).to contain_exactly('thing_one', 'thing_two')
+    expect(stack_definition.resource_names).to contain_exactly('thing_one', 'thing_two')
   end
 
 end

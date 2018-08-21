@@ -15,14 +15,14 @@ RSpec.describe 'Stack instance' do
 
   let(:statefile_folder) { Dir.mktmpdir }
 
-  let(:instance_parameter_values) {
+  let(:parameter_values) {
     {
       'x' => '9',
       'y' => '8'
     }
   }
 
-  let(:required_resource_values) {
+  let(:resource_values) {
     {
       'a' => '1',
       'b' => '2'
@@ -35,8 +35,8 @@ RSpec.describe 'Stack instance' do
       backend_config: {},
       working_folder: working_folder,
       statefile_folder: statefile_folder,
-      instance_parameter_values: instance_parameter_values,
-      required_resource_values: required_resource_values
+      parameter_values: parameter_values,
+      resource_values: resource_values
     )
   }
 

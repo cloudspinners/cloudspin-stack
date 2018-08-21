@@ -4,14 +4,14 @@ module Cloudspin
   module Stack
     class Definition
 
-      attr_reader :instance_parameter_names, :required_resource_names, :terraform_source_path
+      attr_reader :parameter_names, :resource_names, :terraform_source_path
 
       def initialize(terraform_source_path: '',
-                     instance_parameter_names: [],
-                     required_resource_names: [])
+                     parameter_names: [],
+                     resource_names: [])
         @terraform_source_path = terraform_source_path
-        @instance_parameter_names = instance_parameter_names
-        @required_resource_names = required_resource_names
+        @parameter_names = parameter_names
+        @resource_names = resource_names
       end
 
       def self.from_file(specfile)
