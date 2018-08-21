@@ -55,9 +55,12 @@ module Cloudspin
 
     desc 'down', 'Destroy the stack instance'
     option :dry, :type => :boolean, :default => false
+    option :plan, :type => :boolean, :default => false
     def down
       if options[:dry]
         puts instance.down_dry
+      elsif options[:plan]
+        puts instance.down_plan
       else
         instance.down
       end

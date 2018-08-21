@@ -114,6 +114,20 @@ module Cloudspin
         built_command.to_s
       end
 
+      def down_plan
+        RubyTerraform.clean(directory: working_folder)
+        mkdir_p File.dirname(working_folder)
+        cp_r @stack_definition.terraform_source_path, working_folder
+        Dir.chdir(working_folder) do
+          RubyTerraform.init(backend_config: backend_config)
+          RubyTerraform.plan(
+            destroy: true,
+            state: terraform_statefile,
+            vars: terraform_variables
+          )
+        end
+      end
+
       def terraform_variables
         @parameter_values.merge(@resource_values) { |key, oldval, newval|
           raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
