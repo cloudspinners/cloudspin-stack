@@ -55,10 +55,19 @@ module Cloudspin
       end
 
       def add_config_from_yaml(yaml_file)
-        config = YAML.load_file(yaml_file) || {}
+        config = load_config_file(yaml_file)
         add_parameter_values(config['parameters']) if config['parameters']
         add_resource_values(config['resources']) if config['resources']
       end
+
+      def load_config_file(yaml_file)
+        if File.exists?(yaml_file)
+          YAML.load_file(yaml_file) || {}
+        else
+          {}
+        end
+      end
+
 
       def plan(plan_destroy: false)
         RubyTerraform.clean(directory: working_folder)
