@@ -33,33 +33,33 @@ module Cloudspin
       :default => Util.full_path_from_local('./state'),
       :desc => 'Folder to create and store local state'
 
-    desc 'up', 'Create or update the stack instance'
+    desc 'up INSTANCE_ID', 'Create or update the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
-    def up
+    def up(id)
       if options[:plan] && options[:dry]
-        puts instance.plan_dry
+        puts instance(id).plan_dry
       elsif options[:plan] && ! options[:dry]
-        puts instance.plan
+        puts instance(id).plan
       elsif ! options[:plan] && options[:dry]
-        puts instance.up_dry
+        puts instance(id).up_dry
       else
-        instance.up
+        instance(id).up
       end
     end
 
     desc 'down', 'Destroy the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
-    def down
+    def down(id)
       if options[:plan] && options[:dry]
-        puts instance.plan_dry(plan_destroy: true)
+        puts instance(id).plan_dry(plan_destroy: true)
       elsif options[:plan] && ! options[:dry]
-        puts instance.plan(plan_destroy: true)
+        puts instance(id).plan(plan_destroy: true)
       elsif ! options[:plan] && options[:dry]
-        puts instance.down_dry
+        puts instance(id).down_dry
       else
-        instance.down
+        instance(id).down
       end
     end
 
@@ -75,8 +75,9 @@ module Cloudspin
 
     no_commands do
 
-      def instance
+      def instance(id)
         stack = Cloudspin::Stack::Instance.new(
+          id: id,
           stack_definition: stack_definition,
           backend_config: {},
           working_folder: options[:work],

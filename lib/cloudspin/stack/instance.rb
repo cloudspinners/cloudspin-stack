@@ -7,23 +7,33 @@ module Cloudspin
 
       include FileUtils
 
-      attr_reader :working_folder,
+      attr_reader :id,
+          :working_folder,
           :backend_config,
           :statefile_folder,
           :parameter_values,
           :resource_values
 
-      def initialize(stack_definition:,
+      def initialize(id:,
+                     stack_definition:,
                      backend_config:,
                      working_folder:,
                      statefile_folder:
                     )
+        validate_id(id)
+        @id = id
         @stack_definition = stack_definition
         @backend_config = backend_config
         @working_folder = working_folder
         @statefile_folder = statefile_folder
         @parameter_values = {}
         @resource_values = {}
+      end
+
+      def validate_id(raw_id)
+        raise "Stack instance ID '#{raw_id}' won't work. It needs to work as a filename." if /[^0-9A-Za-z.\-\_]/ =~ raw_id
+        raise "Stack instance ID '#{raw_id}' won't work. No double dots allowed." if /\.\./ =~ raw_id
+        raise "Stack instance ID '#{raw_id}' won't work. First character should be a letter." if /^[^A-Za-z]/ =~ raw_id
       end
 
       def add_parameter_values(new_parameter_values)
@@ -123,7 +133,7 @@ module Cloudspin
       end
 
       def terraform_statefile
-        statefile_folder + "/default_name.tfstate"
+        statefile_folder + "/stack-#{id}.tfstate"
       end
 
     end

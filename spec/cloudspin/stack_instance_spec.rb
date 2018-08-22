@@ -31,6 +31,7 @@ RSpec.describe 'Stack instance' do
 
   let(:stack_instance) {
     raw_instance = Cloudspin::Stack::Instance.new(
+      id: 'test_stack_instance',
       stack_definition: stack_definition,
       backend_config: {},
       working_folder: working_folder,
