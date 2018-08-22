@@ -73,7 +73,7 @@ module Cloudspin
           :vars => terraform_variables
         })
         built_command = configured_command.build
-        built_command.to_s
+        "cd #{working_folder} && #{built_command.to_s}"
       end
 
       def up
@@ -98,7 +98,7 @@ module Cloudspin
           :vars => terraform_variables
         })
         built_command = configured_command.build
-        built_command.to_s
+        "cd #{working_folder} && #{built_command.to_s}"
       end
 
       def down
@@ -123,7 +123,7 @@ module Cloudspin
           :vars => terraform_variables
         })
         built_command = configured_command.build
-        built_command.to_s
+        "cd #{working_folder} && #{built_command.to_s}"
       end
 
       def terraform_variables
