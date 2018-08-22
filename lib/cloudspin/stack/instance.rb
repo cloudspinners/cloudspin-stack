@@ -30,6 +30,16 @@ module Cloudspin
         @resource_values = {}
       end
 
+      def self.from_definition_folder(id:, definition_folder:, instance_folder: '.')
+        self.new(
+          id: id,
+          stack_definition: Definition.from_file(definition_folder + '/stack.yaml'),
+          backend_config: {},
+          working_folder: instance_folder + '/work',
+          statefile_folder: instance_folder + '/state'
+        )
+      end
+
       def validate_id(raw_id)
         raise "Stack instance ID '#{raw_id}' won't work. It needs to work as a filename." if /[^0-9A-Za-z.\-\_]/ =~ raw_id
         raise "Stack instance ID '#{raw_id}' won't work. No double dots allowed." if /\.\./ =~ raw_id
