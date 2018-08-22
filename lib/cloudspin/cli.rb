@@ -9,28 +9,25 @@ module Cloudspin
       :aliases => '-f',
       :banner => 'YAML-CONFIG-FILE',
       :type => :array,
-      :default => [
-        Util.full_path_from_local('spin-default.yaml'),
-        Util.full_path_from_local('spin-local.yaml')
-      ],
+      :default => ['spin-default.yaml', 'spin-local.yaml'],
       :desc => 'A list of configuration files to load for the stack instance. Values in files listed later override those from earlier files.'
 
     class_option :terraform_source,
       :aliases => '-t',
       :banner => 'PATH',
-      :default => Util.full_path_from_local('./src'),
+      :default => './src',
       :desc => 'Folder with the terraform project source files'
 
     class_option :work,
       :aliases => '-w',
       :banner => 'PATH',
-      :default => Util.full_path_from_local('./work'),
+      :default => './work',
       :desc => 'Folder to create and copy working files into'
 
     class_option :state,
       :aliases => '-s',
       :banner => 'PATH',
-      :default => Util.full_path_from_local('./state'),
+      :default => './state',
       :desc => 'Folder to create and store local state'
 
     desc 'up INSTANCE_ID', 'Create or update the stack instance'
@@ -48,7 +45,7 @@ module Cloudspin
       end
     end
 
-    desc 'down', 'Destroy the stack instance'
+    desc 'down INSTANCE_ID', 'Destroy the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
     def down(id)

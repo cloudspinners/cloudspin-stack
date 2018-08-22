@@ -25,7 +25,7 @@ module Cloudspin
         @stack_definition = stack_definition
         @backend_config = backend_config
         @working_folder = working_folder
-        @statefile_folder = statefile_folder
+        @statefile_folder = Pathname.new(statefile_folder).realdirpath.to_s
         @parameter_values = {}
         @resource_values = {}
       end

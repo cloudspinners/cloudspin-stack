@@ -15,6 +15,7 @@ module Cloudspin
       end
 
       def self.from_file(specfile)
+        raise "Cloudspin definition file not found: #{specfile}" unless File.exists?(specfile)
         spec_hash = YAML.load_file(specfile)
         stack_spec = symbolize(spec_hash)
         terraform_source_path = File.dirname(specfile)
