@@ -18,6 +18,14 @@ RSpec.describe 'Stack defined with defaults' do
     expect(stack_definition.resource_names).to be_empty
   end
 
+  it 'has the default stack name' do
+    expect(stack_definition.name).to eq('NO_NAME')
+  end
+
+  it 'has the default version' do
+    expect(stack_definition.version).to eq('0')
+  end
+
 end
 
 
@@ -27,7 +35,8 @@ RSpec.describe 'Stack defined from code' do
     Cloudspin::Stack::Definition.new(
       terraform_source_path: 'some/path',
       parameter_names: [ 'a', 'b'],
-      resource_names: [ 'x', 'y' ]
+      resource_names: [ 'x', 'y' ],
+      stack: { :name => 'a_name', :version => '0.0.0-x' }
     )
   }
 
@@ -43,6 +52,14 @@ RSpec.describe 'Stack defined from code' do
     expect(stack_definition.resource_names).to contain_exactly('x', 'y')
   end
 
+  it 'has the defined stack name' do
+    expect(stack_definition.name).to eq('a_name')
+  end
+
+  it 'has the defined version' do
+    expect(stack_definition.version).to eq('0.0.0-x')
+  end
+
 end
 
 
@@ -52,6 +69,9 @@ RSpec.describe 'Stack defined from yaml spec file' do
     tmp = Tempfile.new('stack_definition_spec.yaml')
     tmp.write(<<~YAML_FILE
       ---
+      stack:
+        name: yaml_name
+        version: 0.0.0-y
       parameter_names:
       - foo
       - bar
@@ -78,6 +98,14 @@ RSpec.describe 'Stack defined from yaml spec file' do
 
   it 'has the required resource names defined in the yaml file' do
     expect(stack_definition.resource_names).to contain_exactly('thing_one', 'thing_two')
+  end
+
+  it 'has the stack name defined in the yaml file' do
+    expect(stack_definition.name).to eq('yaml_name')
+  end
+
+  it 'has the version defined in the yaml file' do
+    expect(stack_definition.version).to eq('0.0.0-y')
   end
 
 end
