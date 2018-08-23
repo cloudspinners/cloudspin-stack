@@ -133,3 +133,9 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/cloudspin-stack.
+
+
+# Credits
+
+This project makes extensive use of ideas and code from Toby Clemson and Jimmy Thompson, particularly [infrablocks](https://github.com/infrablocks). I've also benefited from feedback on implementation concepts from Vincenzo Fabrizi, and other [ThoughtWorkers](https://thoughtworks.com).
+
