@@ -33,7 +33,7 @@ module Cloudspin
       def self.from_definition_folder(id:, definition_folder:, instance_folder: '.')
         self.new(
           id: id,
-          stack_definition: Definition.from_file(definition_folder + '/stack.yaml'),
+          stack_definition: Definition.from_file(definition_folder + '/stack-definition.yaml'),
           backend_config: {},
           working_folder: instance_folder + '/work',
           statefile_folder: instance_folder + '/state'

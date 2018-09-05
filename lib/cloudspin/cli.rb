@@ -88,7 +88,7 @@ module Cloudspin
       end
 
       def stack_definition
-        Cloudspin::Stack::Definition.from_file(options[:terraform_source] + '/stack.yaml')
+        Cloudspin::Stack::Definition.from_file(options[:terraform_source] + '/stack-definition.yaml')
       end
 
     end
