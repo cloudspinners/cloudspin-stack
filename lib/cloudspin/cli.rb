@@ -9,7 +9,7 @@ module Cloudspin
       :aliases => '-f',
       :banner => 'YAML-CONFIG-FILE',
       :type => :array,
-      :default => ['spin-default.yaml', 'spin-local.yaml'],
+      :default => ['stack-instance-defaults.yaml', 'stack-instance-local.yaml'],
       :desc => 'A list of configuration files to load for the stack instance. Values in files listed later override those from earlier files.'
 
     class_option :terraform_source,
