@@ -83,7 +83,7 @@ module Cloudspin
         options[:file].each { |config_file|
           stack.add_config_from_yaml(config_file)
         }
-        stack.add_parameter_values({ :deployment_identifier => id })
+        stack.add_parameter_values({ :instance_identifier => id })
         stack
       end
 
