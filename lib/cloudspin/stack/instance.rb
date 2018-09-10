@@ -30,6 +30,39 @@ module Cloudspin
         @resource_values = {}
       end
 
+      def self.from_files(stack_definition:, files:)
+        configuration = InstanceConfiguration.new()
+        files.each { |filename|
+          configuration.add_values(load_file(filename))
+        }
+        self.new()
+      end
+
+      def self.load_file(yaml_file)
+        if File.exists?(yaml_file)
+          YAML.load_file(yaml_file) || {}
+        else
+          {}
+        end
+      end
+
+      def add_config_from_yaml(yaml_file)
+        config = load_config_file(yaml_file)
+        add_parameter_values(config['parameters']) if config['parameters']
+        add_resource_values(config['resources']) if config['resources']
+      end
+
+      def load_config_file(yaml_file)
+        if File.exists?(yaml_file)
+          YAML.load_file(yaml_file) || {}
+        else
+          {}
+        end
+      end
+
+
+
+
       def self.from_definition_folder(id:, definition_folder:, instance_folder: '.')
         self.new(
           id: id,
