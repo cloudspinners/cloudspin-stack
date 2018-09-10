@@ -1,46 +1,51 @@
 
-RSpec.describe 'Stack instance' do
+RSpec.describe 'Stack::Instance' do
 
-  let(:source_folder) {
+  let(:stack_definition) {
+    Cloudspin::Stack::Definition.new(source_path: source_path, stack_name: 'my_stack')
+  }
+
+  let(:stack_instance) {
+    Cloudspin::Stack::Instance.new(
+      id: 'test_stack_instance',
+      stack_definition: stack_definition,
+      backend_config: {},
+      working_folder: working_folder,
+      statefile_folder: statefile_folder,
+      configuration: instance_configuration
+    )
+  }
+
+  let(:instance_configuration) {
+    Cloudspin::Stack::InstanceConfiguration.new(stack_definition)
+      .add_values(configuration_values)
+  }
+
+  let(:working_folder) { Dir.mktmpdir }
+  let(:statefile_folder) { Dir.mktmpdir }
+
+  let(:source_path) {
     src = Dir.mktmpdir
     File.write("#{src}/main.tf", '# Empty terraform file')
     src
   }
 
-  let(:stack_definition) {
-    Cloudspin::Stack::Definition.new(terraform_source_path: source_folder)
-  }
-
-  let(:working_folder) { Dir.mktmpdir }
-
-  let(:statefile_folder) { Dir.mktmpdir }
-
-  let(:parameter_values) {
+  let(:configuration_values) {
     {
-      'x' => '9',
-      'y' => '8'
+      'parameter_values' => {
+        'x' => '9',
+        'y' => '8'
+      },
+      'resource_values' => {
+        'a' => '1',
+        'b' => '2'
+      }
     }
   }
 
-  let(:resource_values) {
-    {
-      'a' => '1',
-      'b' => '2'
-    }
-  }
-
-  let(:stack_instance) {
-    raw_instance = Cloudspin::Stack::Instance.new(
-      id: 'test_stack_instance',
-      stack_definition: stack_definition,
-      backend_config: {},
-      working_folder: working_folder,
-      statefile_folder: statefile_folder
-    )
-    raw_instance.add_parameter_values(parameter_values)
-    raw_instance.add_resource_values(resource_values)
-    raw_instance
-  }
+  it 'has the expected stack_identifier' do
+    expect(stack_instance.id).to eq('test_stack_instance')
+  end
 
   it 'is planned without error' do
     expect { stack_instance.plan }.not_to raise_error

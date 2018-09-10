@@ -1,17 +1,23 @@
 
 RSpec.describe 'Stack::InstanceConfiguration' do
 
-  let(:stack_definition) { Cloudspin::Stack::Definition.new }
+  let(:stack_definition) { 
+      Cloudspin::Stack::Definition.new(
+        source_path: '/some/path',
+        stack_name: 'a_name'
+      )
+  }
 
   let(:configuration) {
-    Cloudspin::Stack::InstanceConfiguration.new(stack_definition).add_values(instance_configuration_values)
+    Cloudspin::Stack::InstanceConfiguration.new(stack_definition)
+      .add_values(instance_configuration_values)
   }
 
   describe 'with no configuration' do
     let(:instance_configuration_values) {{}} 
 
     it 'has the definition name as the instance_identifier' do
-      expect(configuration.instance_identifier).to eq('NO_NAME')
+      expect(configuration.instance_identifier).to eq('a_name')
     end
 
     # it 'raises an error' do
@@ -22,9 +28,9 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   describe 'with a single set of configuration' do
     let(:instance_configuration_values) {
       {
-        'instance' => { 'option' => 'value_x' },
-        'parameters' => { 'option' => 'value_y' },
-        'resources' => { 'option' => 'value_z' }
+        'instance_values' => { 'option' => 'value_x' },
+        'parameter_values' => { 'option' => 'value_y' },
+        'resource_values' => { 'option' => 'value_z' }
       }
     }
 
@@ -44,14 +50,14 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   describe 'overriding values' do
     let(:first_config) {
       {
-        'instance' => { 'option' => 'first_set' },
-        'parameters' => { 'option' => 'first_set' }
+        'instance_values' => { 'option' => 'first_set' },
+        'parameter_values' => { 'option' => 'first_set' }
       }
     }
     let(:second_config) {
       {
-        'parameters' => { 'option' => 'second_set' },
-        'resources' => { 'option' => 'second_set' }
+        'parameter_values' => { 'option' => 'second_set' },
+        'resource_values' => { 'option' => 'second_set' }
       }
     }
     let(:configuration) {
@@ -73,8 +79,12 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
   describe 'stack name set in the stack definition' do
     let(:stack_definition) {
-      Cloudspin::Stack::Definition.new(stack: { :name => 'a_name' })
+      Cloudspin::Stack::Definition.new(
+        source_path: '/some/path',
+        stack_name: 'a_name'
+      )
     }
+
     let(:instance_configuration_values) {{}}
 
     it 'is set in the instance configuration' do
@@ -84,12 +94,15 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
   describe 'with the instance identifier explicitly set' do
     let(:stack_definition) {
-      Cloudspin::Stack::Definition.new(stack: { :name => 'a_name' })
+      Cloudspin::Stack::Definition.new(
+        source_path: '/some/path',
+        stack_name: 'a_name'
+      )
     }
 
     let(:instance_configuration_values) {
       {
-        'instance' => { 'identifier' => 'overridden_identifier' },
+        'instance_values' => { 'identifier' => 'overridden_identifier' },
       }
     }
 
@@ -100,7 +113,10 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
   describe 'without overriding the identifier' do
     let(:stack_definition) {
-      Cloudspin::Stack::Definition.new(stack: { :name => 'a_name' })
+      Cloudspin::Stack::Definition.new(
+        source_path: '/some/path',
+        stack_name: 'a_name'
+      )
     }
 
     let(:instance_configuration_values) {{}} 

@@ -21,9 +21,9 @@ module Cloudspin
       end
 
       def add_values(values)
-        @instance_values.merge!(values['instance']) if values['instance']
-        @parameter_values.merge!(values['parameters']) if values['parameters']
-        @resource_values.merge!(values['resources']) if values['resources']
+        @instance_values.merge!(values['instance_values']) if values['instance_values']
+        @parameter_values.merge!(values['parameter_values']) if values['parameter_values']
+        @resource_values.merge!(values['resource_values']) if values['resource_values']
         self
       end
 

@@ -11,14 +11,14 @@ module Cloudspin
           :working_folder,
           :backend_config,
           :statefile_folder,
-          :parameter_values,
-          :resource_values
+          :configuration
 
       def initialize(id:,
                      stack_definition:,
                      backend_config:,
                      working_folder:,
-                     statefile_folder:
+                     statefile_folder:,
+                     configuration:
                     )
         validate_id(id)
         @id = id
@@ -26,9 +26,28 @@ module Cloudspin
         @backend_config = backend_config
         @working_folder = working_folder
         @statefile_folder = Pathname.new(statefile_folder).realdirpath.to_s
-        @parameter_values = {}
-        @resource_values = {}
+        @configuration = configuration
       end
+
+
+      # def self.from_code()
+      #   definition = Definition.new(source_path:, stack_name:, stack_version:)
+
+      #   from_file(definition_folder + '/stack-definition.yaml')
+      #   from_files(
+      #     stack_definition: Definition.from_file(definition_folder + '/stack-definition.yaml'),
+      #     files: 
+      #   )
+        # self.new(
+        #   id: id,
+        #   stack_definition: Definition.from_file(definition_folder + '/stack-definition.yaml'),
+        #   backend_config: {},
+        #   working_folder: instance_folder + '/work',
+        #   statefile_folder: instance_folder + '/state'
+        # )
+      # end
+
+
 
       def self.from_files(stack_definition:, files:)
         configuration = InstanceConfiguration.new()
@@ -46,32 +65,19 @@ module Cloudspin
         end
       end
 
-      def add_config_from_yaml(yaml_file)
-        config = load_config_file(yaml_file)
-        add_parameter_values(config['parameters']) if config['parameters']
-        add_resource_values(config['resources']) if config['resources']
-      end
+      # def add_config_from_yaml(yaml_file)
+      #   config = load_config_file(yaml_file)
+      #   add_parameter_values(config['parameters']) if config['parameters']
+      #   add_resource_values(config['resources']) if config['resources']
+      # end
 
-      def load_config_file(yaml_file)
-        if File.exists?(yaml_file)
-          YAML.load_file(yaml_file) || {}
-        else
-          {}
-        end
-      end
-
-
-
-
-      def self.from_definition_folder(id:, definition_folder:, instance_folder: '.')
-        self.new(
-          id: id,
-          stack_definition: Definition.from_file(definition_folder + '/stack-definition.yaml'),
-          backend_config: {},
-          working_folder: instance_folder + '/work',
-          statefile_folder: instance_folder + '/state'
-        )
-      end
+      # def load_config_file(yaml_file)
+      #   if File.exists?(yaml_file)
+      #     YAML.load_file(yaml_file) || {}
+      #   else
+      #     {}
+      #   end
+      # end
 
       def validate_id(raw_id)
         raise "Stack instance ID '#{raw_id}' won't work. It needs to work as a filename." if /[^0-9A-Za-z.\-\_]/ =~ raw_id
@@ -79,33 +85,25 @@ module Cloudspin
         raise "Stack instance ID '#{raw_id}' won't work. First character should be a letter." if /^[^A-Za-z]/ =~ raw_id
       end
 
-      def add_parameter_values(new_parameter_values)
-        @parameter_values.merge!(new_parameter_values)
-      end
+      # def add_config_from_yaml(yaml_file)
+      #   config = load_config_file(yaml_file)
+      #   add_parameter_values(config['parameters']) if config['parameters']
+      #   add_resource_values(config['resources']) if config['resources']
+      # end
 
-      def add_resource_values(new_resource_values)
-        @resource_values.merge!(new_resource_values)
-      end
-
-      def add_config_from_yaml(yaml_file)
-        config = load_config_file(yaml_file)
-        add_parameter_values(config['parameters']) if config['parameters']
-        add_resource_values(config['resources']) if config['resources']
-      end
-
-      def load_config_file(yaml_file)
-        if File.exists?(yaml_file)
-          YAML.load_file(yaml_file) || {}
-        else
-          {}
-        end
-      end
+      # def load_config_file(yaml_file)
+      #   if File.exists?(yaml_file)
+      #     YAML.load_file(yaml_file) || {}
+      #   else
+      #     {}
+      #   end
+      # end
 
 
       def plan(plan_destroy: false)
         RubyTerraform.clean(directory: working_folder)
         mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.terraform_source_path, working_folder
+        cp_r @stack_definition.source_path, working_folder
         Dir.chdir(working_folder) do
           RubyTerraform.init(backend_config: backend_config)
           RubyTerraform.plan(
@@ -131,7 +129,7 @@ module Cloudspin
       def up
         RubyTerraform.clean(directory: working_folder)
         mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.terraform_source_path, working_folder
+        cp_r @stack_definition.source_path, working_folder
         Dir.chdir(working_folder) do
           RubyTerraform.init(backend_config: backend_config)
           RubyTerraform.apply(
@@ -156,7 +154,7 @@ module Cloudspin
       def down
         RubyTerraform.clean(directory: working_folder)
         mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.terraform_source_path, working_folder
+        cp_r @stack_definition.source_path, working_folder
         Dir.chdir(working_folder) do
           RubyTerraform.init(backend_config: backend_config)
           RubyTerraform.destroy(
@@ -179,7 +177,7 @@ module Cloudspin
       end
 
       def terraform_variables
-        @parameter_values.merge(@resource_values) { |key, oldval, newval|
+        configuration.parameter_values.merge(configuration.resource_values) { |key, oldval, newval|
           raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
         }
       end
