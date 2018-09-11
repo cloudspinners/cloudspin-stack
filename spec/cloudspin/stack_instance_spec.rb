@@ -22,6 +22,10 @@ RSpec.describe 'Stack::Instance' do
       )
     }
 
+    let(:instance_configuration) {
+      Cloudspin::Stack::InstanceConfiguration.new(stack_definition)
+    }
+
     it 'has the expected stack_identifier' do
       expect(stack_instance.id).to eq('test_stack_instance')
     end
@@ -38,19 +42,50 @@ RSpec.describe 'Stack::Instance' do
       src
     }
 
+    let(:first_config_file) {
+      tmp = Tempfile.new('first_instance_config.yaml')
+      tmp.write(<<~FIRST_YAML_FILE
+        ---
+        parameters:
+          x: 6
+        resources:
+          a: 1
+        FIRST_YAML_FILE
+      )
+      tmp.close
+      tmp.path
+    }
+
+    let(:second_config_file) {
+      tmp = Tempfile.new('second_instance_config.yaml')
+      tmp.write(<<~SECOND_YAML_FILE
+        ---
+        parameters:
+          x: 9
+          y: 8
+        resources:
+          b: 2
+        SECOND_YAML_FILE
+      )
+      tmp.close
+      tmp.path
+    }
+
+
+
     let(:stack_instance) {
-      Cloudspin::Stack::Instance.new(
-        id: 'test_stack_instance',
+      Cloudspin::Stack::Instance.from_files(
+        first_config_file,
+        second_config_file,
         stack_definition: stack_definition,
         backend_config: {},
         working_folder: working_folder,
-        statefile_folder: statefile_folder,
-        configuration: instance_configuration
+        statefile_folder: statefile_folder
       )
     }
 
     it 'has the expected stack_identifier' do
-      expect(stack_instance.id).to eq('test_stack_instance')
+      expect(stack_instance.id).to eq('my_stack')
     end
 
     it 'is planned without error' do
@@ -71,24 +106,5 @@ RSpec.describe 'Stack::Instance' do
       expect( stack_instance.plan_dry ).to match(/-var 'b=2'/)
     end
   end
-
-  let(:instance_configuration) {
-    Cloudspin::Stack::InstanceConfiguration.new(stack_definition)
-      .add_values(configuration_values)
-  }
-
-  let(:configuration_values) {
-    {
-      'parameters' => {
-        'x' => '9',
-        'y' => '8'
-      },
-      'resources' => {
-        'a' => '1',
-        'b' => '2'
-      }
-    }
-  }
-
 
 end

@@ -22,7 +22,7 @@ module Cloudspin
 
       def self.from_files(stack_definition, *configuration_files)
         config = self.new(stack_definition)
-        configuration_files.each { |config_file|
+        configuration_files.flatten.each { |config_file|
           config.add_values(load_file(config_file))
         }
         config

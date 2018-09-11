@@ -30,75 +30,45 @@ module Cloudspin
         @configuration = configuration
       end
 
-      # def from_files(
-      #       definition_folder:, 
-      #       backend_config:,
-      #       working_folder:,
-      #       statefile_folder:,
-      #       *instance_configuration_files
-      # )
-      #   stack_definition = Cloudspin::Stack::Definition.from_folder(definition_folder)
-      #   configuration = InstanceConfiguration.from_files(instance_configuration_files)
-      #   self.new(
-      #       id: configuration.instance_identifier,
-      #       stack_definition: stack_definition,
-      #       backend_config: backend_config,
-      #       working_folder: working_folder,
-      #       statefile_folder: statefile_folder,
-      #       configuration: configuration
-      #   )
-      # end
+      def self.from_files(
+            *instance_configuration_files,
+            stack_definition_folder:,
+            backend_config:,
+            working_folder:,
+            statefile_folder:
+      )
+        self.from_files(
+            instance_configuration_files,
+            stack_definition: Definition.from_folder(stack_definition_folder),
+            backend_config: backend_config,
+            working_folder: working_folder,
+            statefile_folder: statefile_folder
+          )
+      end
 
-      # def self.from_files(stack_definition:, files:)
-      #   configuration = InstanceConfiguration.new()
-      #   files.each { |filename|
-      #     configuration.add_values(load_file(filename))
-      #   }
-      #   self.new()
-      # end
-
-      # def self.load_file(yaml_file)
-      #   if File.exists?(yaml_file)
-      #     YAML.load_file(yaml_file) || {}
-      #   else
-      #     {}
-      #   end
-      # end
-
-      # def add_config_from_yaml(yaml_file)
-      #   config = load_config_file(yaml_file)
-      #   add_parameter_values(config['parameters']) if config['parameters']
-      #   add_resource_values(config['resources']) if config['resources']
-      # end
-
-      # def load_config_file(yaml_file)
-      #   if File.exists?(yaml_file)
-      #     YAML.load_file(yaml_file) || {}
-      #   else
-      #     {}
-      #   end
-      # end
+      def self.from_files(
+            *instance_configuration_files,
+            stack_definition:,
+            backend_config:,
+            working_folder:,
+            statefile_folder:
+      )
+        instance_configuration = InstanceConfiguration.from_files(stack_definition, instance_configuration_files)
+        self.new(
+            id: instance_configuration.instance_identifier,
+            stack_definition: stack_definition,
+            backend_config: backend_config,
+            working_folder: working_folder,
+            statefile_folder: statefile_folder,
+            configuration: instance_configuration
+          )
+      end
 
       def validate_id(raw_id)
         raise "Stack instance ID '#{raw_id}' won't work. It needs to work as a filename." if /[^0-9A-Za-z.\-\_]/ =~ raw_id
         raise "Stack instance ID '#{raw_id}' won't work. No double dots allowed." if /\.\./ =~ raw_id
         raise "Stack instance ID '#{raw_id}' won't work. First character should be a letter." if /^[^A-Za-z]/ =~ raw_id
       end
-
-      # def add_config_from_yaml(yaml_file)
-      #   config = load_config_file(yaml_file)
-      #   add_parameter_values(config['parameters']) if config['parameters']
-      #   add_resource_values(config['resources']) if config['resources']
-      # end
-
-      # def load_config_file(yaml_file)
-      #   if File.exists?(yaml_file)
-      #     YAML.load_file(yaml_file) || {}
-      #   else
-      #     {}
-      #   end
-      # end
-
 
       def plan(plan_destroy: false)
         RubyTerraform.clean(directory: working_folder)
