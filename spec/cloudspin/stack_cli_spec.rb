@@ -17,7 +17,7 @@ RSpec.describe Cloudspin::CLI do
 
   describe 'info' do
     it 'should print the configuration file list' do
-      expect(capture(:stdout) { subject.info }).to match(/^Configuration file:/)
+      expect(capture(:stdout) { subject.info }).to match(/^Configuration files:/)
     end
   end
 

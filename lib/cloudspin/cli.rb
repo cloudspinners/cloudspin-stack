@@ -10,10 +10,10 @@ module Cloudspin
       :banner => 'YAML-CONFIG-FILE',
       :type => :array,
       :default => ['stack-instance-defaults.yaml', 'stack-instance-local.yaml'],
-      :desc => 'A list of configuration files to load for the stack instance. Values in files listed later override those from earlier files.'
+      :desc => 'A list of stack instance configuration files. Values in files listed later override those from earlier files.'
 
-    class_option :terraform_source,
-      :aliases => '-t',
+    class_option :source,
+      :aliases => '-s',
       :banner => 'PATH',
       :default => './src',
       :desc => 'Folder with the terraform project source files'
@@ -22,18 +22,6 @@ module Cloudspin
       :aliases => '-e',
       :banner => 'YAML-CONFIG-FILE',
       :desc => 'An environment instance to manage.'
-
-    class_option :work,
-      :aliases => '-w',
-      :banner => 'PATH',
-      :default => './work',
-      :desc => 'Folder to create and copy working files into'
-
-    class_option :state,
-      :aliases => '-s',
-      :banner => 'PATH',
-      :default => './state',
-      :desc => 'Folder to create and store local state'
 
     desc 'up', 'Create or update the stack instance'
     option :dry, :type => :boolean, :default => false
