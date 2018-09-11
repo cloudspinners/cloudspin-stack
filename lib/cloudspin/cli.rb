@@ -18,6 +18,11 @@ module Cloudspin
       :default => './src',
       :desc => 'Folder with the terraform project source files'
 
+    class_option :environment,
+      :aliases => '-e',
+      :banner => 'YAML-CONFIG-FILE',
+      :desc => 'An environment instance to manage.'
+
     class_option :work,
       :aliases => '-w',
       :banner => 'PATH',
@@ -67,14 +72,14 @@ module Cloudspin
 
     desc 'info', 'Print some info about arguments, for debugging'
     def info
-      puts "Configuration file: #{options[:file]}"
+      puts "Configuration files: #{instance_configuration_files}"
     end
 
     no_commands do
 
       def instance
         Cloudspin::Stack::Instance.from_files(
-          options[:file],
+          instance_configuration_files,
           stack_definition: stack_definition,
           backend_config: {},
           working_folder: options[:work],
@@ -84,6 +89,23 @@ module Cloudspin
 
       def stack_definition
         Cloudspin::Stack::Definition.from_file(options[:terraform_source] + '/stack-definition.yaml')
+      end
+
+      def instance_configuration_files
+        file_list = options[:file]
+        if options[:environment]
+          if File.exists? environment_config_file
+            file_list << environment_config_file
+          else
+            $stderr.puts "Missing configuration file for environment #{options[:environment]} (#{environment_config_file})"
+            exit 1
+          end
+        end
+        file_list
+      end
+
+      def environment_config_file
+        Pathname.new("./environments/stack-instance-#{options[:environment]}.yaml").realdirpath.to_s
       end
 
     end
