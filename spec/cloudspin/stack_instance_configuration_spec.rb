@@ -16,21 +16,17 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   describe 'with no configuration' do
     let(:instance_configuration_values) {{}} 
 
-    it 'has the definition name as the instance_identifier' do
+    it 'uses the definition name as the instance_identifier' do
       expect(configuration.instance_identifier).to eq('a_name')
     end
-
-    # it 'raises an error' do
-    #   expect { configuration.instance_identifier }.to raise_error(Cloudspin::Stack::NoInstanceIdentifierError)
-    # end
   end
 
   describe 'with a single set of configuration' do
     let(:instance_configuration_values) {
       {
-        'instance_values' => { 'option' => 'value_x' },
-        'parameter_values' => { 'option' => 'value_y' },
-        'resource_values' => { 'option' => 'value_z' }
+        'instance' => { 'option' => 'value_x' },
+        'parameters' => { 'option' => 'value_y' },
+        'resources' => { 'option' => 'value_z' }
       }
     }
 
@@ -47,37 +43,37 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     end
   end
 
-  describe 'overriding values' do
+  describe 'with overridden values' do
     let(:first_config) {
       {
-        'instance_values' => { 'option' => 'first_set' },
-        'parameter_values' => { 'option' => 'first_set' }
+        'instance' => { 'option' => 'first_set' },
+        'parameters' => { 'option' => 'first_set' }
       }
     }
     let(:second_config) {
       {
-        'parameter_values' => { 'option' => 'second_set' },
-        'resource_values' => { 'option' => 'second_set' }
+        'parameters' => { 'option' => 'second_set' },
+        'resources' => { 'option' => 'second_set' }
       }
     }
     let(:configuration) {
       Cloudspin::Stack::InstanceConfiguration.new(stack_definition).add_values(first_config).add_values(second_config)
     }
 
-    it 'has the first value if not in the second set' do
+    it 'the first value is used if it\'s the only one' do
       expect(configuration.instance_values['option']).to eq('first_set')
     end
 
-    it 'has the second value if not in the first set' do
+    it 'the second value is used if it\'s the only one' do
       expect(configuration.resource_values['option']).to eq('second_set')
     end
 
-    it 'has the second value if in both sets' do
+    it 'the second value overrides the first if both are set' do
       expect(configuration.parameter_values['option']).to eq('second_set')
     end
   end
 
-  describe 'stack name set in the stack definition' do
+  describe 'with stack name set in the stack definition' do
     let(:stack_definition) {
       Cloudspin::Stack::Definition.new(
         source_path: '/some/path',
@@ -102,7 +98,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
     let(:instance_configuration_values) {
       {
-        'instance_values' => { 'identifier' => 'overridden_identifier' },
+        'instance' => { 'identifier' => 'overridden_identifier' },
       }
     }
 
@@ -126,18 +122,50 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     end
   end
 
-  # it 'returns a reasonable-looking plan command' do
-  #   expect( stack_instance.plan_dry ).to match(/terraform plan/)
-  # end
+  describe 'loaded from files' do
+    let(:first_file) {
+      tmp = Tempfile.new('first_instance_config.yaml')
+      tmp.write(<<~FIRST_YAML_FILE
+        ---
+        instance:
+          option: first_set
+        parameters:
+          option: first_set
+        FIRST_YAML_FILE
+      )
+      tmp.close
+      tmp.path
+    }
 
-  # it 'includes the instance parameters in the terraform command' do
-  #   expect( stack_instance.plan_dry ).to match(/-var 'x=9'/)
-  #   expect( stack_instance.plan_dry ).to match(/-var 'y=8'/)
-  # end
+    let(:second_file) {
+      tmp = Tempfile.new('second_instance_config.yaml')
+      tmp.write(<<~SECOND_YAML_FILE
+        ---
+        parameters:
+          option: second_set
+        resources:
+          option: second_set
+        SECOND_YAML_FILE
+      )
+      tmp.close
+      tmp.path
+    }
 
-  # it 'includes the required resources in the terraform command' do
-  #   expect( stack_instance.plan_dry ).to match(/-var 'a=1'/)
-  #   expect( stack_instance.plan_dry ).to match(/-var 'b=2'/)
-  # end
+    let(:configuration) {
+      Cloudspin::Stack::InstanceConfiguration.from_files(stack_definition, first_file, second_file)
+    }
 
+    it 'uses the value from the first file if it\'s only set there' do
+      expect(configuration.instance_values['option']).to eq('first_set')
+    end
+
+    it 'uses the value from the second file if it\'s only set there' do
+      expect(configuration.resource_values['option']).to eq('second_set')
+    end
+
+    it 'uses values from the second file if it\'s found in both files' do
+      expect(configuration.parameter_values['option']).to eq('second_set')
+    end
+
+  end
 end

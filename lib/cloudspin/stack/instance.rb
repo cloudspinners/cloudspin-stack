@@ -13,13 +13,14 @@ module Cloudspin
           :statefile_folder,
           :configuration
 
-      def initialize(id:,
-                     stack_definition:,
-                     backend_config:,
-                     working_folder:,
-                     statefile_folder:,
-                     configuration:
-                    )
+      def initialize(
+            id:,
+            stack_definition:,
+            backend_config:,
+            working_folder:,
+            statefile_folder:,
+            configuration:
+      )
         validate_id(id)
         @id = id
         @stack_definition = stack_definition
@@ -29,41 +30,40 @@ module Cloudspin
         @configuration = configuration
       end
 
-
-      # def self.from_code()
-      #   definition = Definition.new(source_path:, stack_name:, stack_version:)
-
-      #   from_file(definition_folder + '/stack-definition.yaml')
-      #   from_files(
-      #     stack_definition: Definition.from_file(definition_folder + '/stack-definition.yaml'),
-      #     files: 
+      # def from_files(
+      #       definition_folder:, 
+      #       backend_config:,
+      #       working_folder:,
+      #       statefile_folder:,
+      #       *instance_configuration_files
+      # )
+      #   stack_definition = Cloudspin::Stack::Definition.from_folder(definition_folder)
+      #   configuration = InstanceConfiguration.from_files(instance_configuration_files)
+      #   self.new(
+      #       id: configuration.instance_identifier,
+      #       stack_definition: stack_definition,
+      #       backend_config: backend_config,
+      #       working_folder: working_folder,
+      #       statefile_folder: statefile_folder,
+      #       configuration: configuration
       #   )
-        # self.new(
-        #   id: id,
-        #   stack_definition: Definition.from_file(definition_folder + '/stack-definition.yaml'),
-        #   backend_config: {},
-        #   working_folder: instance_folder + '/work',
-        #   statefile_folder: instance_folder + '/state'
-        # )
       # end
 
+      # def self.from_files(stack_definition:, files:)
+      #   configuration = InstanceConfiguration.new()
+      #   files.each { |filename|
+      #     configuration.add_values(load_file(filename))
+      #   }
+      #   self.new()
+      # end
 
-
-      def self.from_files(stack_definition:, files:)
-        configuration = InstanceConfiguration.new()
-        files.each { |filename|
-          configuration.add_values(load_file(filename))
-        }
-        self.new()
-      end
-
-      def self.load_file(yaml_file)
-        if File.exists?(yaml_file)
-          YAML.load_file(yaml_file) || {}
-        else
-          {}
-        end
-      end
+      # def self.load_file(yaml_file)
+      #   if File.exists?(yaml_file)
+      #     YAML.load_file(yaml_file) || {}
+      #   else
+      #     {}
+      #   end
+      # end
 
       # def add_config_from_yaml(yaml_file)
       #   config = load_config_file(yaml_file)

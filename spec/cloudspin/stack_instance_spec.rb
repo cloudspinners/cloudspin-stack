@@ -11,6 +11,17 @@ RSpec.describe 'Stack::Instance' do
     let(:working_folder) { '/does/not/matter/work' }
     let(:statefile_folder) { '/tmp/state' }
 
+    let(:stack_instance) {
+      Cloudspin::Stack::Instance.new(
+        id: 'test_stack_instance',
+        stack_definition: stack_definition,
+        backend_config: {},
+        working_folder: working_folder,
+        statefile_folder: statefile_folder,
+        configuration: instance_configuration
+      )
+    }
+
     it 'has the expected stack_identifier' do
       expect(stack_instance.id).to eq('test_stack_instance')
     end
@@ -25,6 +36,17 @@ RSpec.describe 'Stack::Instance' do
       src = Dir.mktmpdir
       File.write("#{src}/main.tf", '# Empty terraform file')
       src
+    }
+
+    let(:stack_instance) {
+      Cloudspin::Stack::Instance.new(
+        id: 'test_stack_instance',
+        stack_definition: stack_definition,
+        backend_config: {},
+        working_folder: working_folder,
+        statefile_folder: statefile_folder,
+        configuration: instance_configuration
+      )
     }
 
     it 'has the expected stack_identifier' do
@@ -50,19 +72,6 @@ RSpec.describe 'Stack::Instance' do
     end
   end
 
-
-  let(:stack_instance) {
-    Cloudspin::Stack::Instance.new(
-      id: 'test_stack_instance',
-      stack_definition: stack_definition,
-      backend_config: {},
-      working_folder: working_folder,
-      statefile_folder: statefile_folder,
-      configuration: instance_configuration
-    )
-  }
-
-
   let(:instance_configuration) {
     Cloudspin::Stack::InstanceConfiguration.new(stack_definition)
       .add_values(configuration_values)
@@ -70,11 +79,11 @@ RSpec.describe 'Stack::Instance' do
 
   let(:configuration_values) {
     {
-      'parameter_values' => {
+      'parameters' => {
         'x' => '9',
         'y' => '8'
       },
-      'resource_values' => {
+      'resources' => {
         'a' => '1',
         'b' => '2'
       }

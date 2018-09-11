@@ -20,10 +20,26 @@ module Cloudspin
         @resource_values = {}
       end
 
+      def self.from_files(stack_definition, *configuration_files)
+        config = self.new(stack_definition)
+        configuration_files.each { |config_file|
+          config.add_values(load_file(config_file))
+        }
+        config
+      end
+
+      def self.load_file(yaml_file)
+        if File.exists?(yaml_file)
+          YAML.load_file(yaml_file) || {}
+        else
+          {}
+        end
+      end
+
       def add_values(values)
-        @instance_values.merge!(values['instance_values']) if values['instance_values']
-        @parameter_values.merge!(values['parameter_values']) if values['parameter_values']
-        @resource_values.merge!(values['resource_values']) if values['resource_values']
+        @instance_values.merge!(values['instance']) if values['instance']
+        @parameter_values.merge!(values['parameters']) if values['parameters']
+        @resource_values.merge!(values['resources']) if values['resources']
         self
       end
 
@@ -35,9 +51,15 @@ module Cloudspin
         end
       end
 
-    end
+      def to_s
+        {
+          'instance' => instance_values,
+          'parameters' => parameter_values,
+          'resources' => resource_values
+        }.to_s
+      end
 
-    class NoInstanceIdentifierError < StandardError; end
+    end
 
   end
 end

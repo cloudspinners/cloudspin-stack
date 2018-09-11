@@ -18,13 +18,16 @@ module Cloudspin
         raise NoStackDefinitionConfigurationFile unless File.exists?(specfile)
         source_path = File.dirname(specfile)
         spec_hash = YAML.load_file(specfile)
-        # stack_spec = symbolize(spec_hash)
         self.new(
           source_path: source_path,
           stack_name: spec_hash.dig('stack', 'name'),
           stack_version: spec_hash.dig('stack', 'version')
         )
       end
+    end
+
+    def self.from_folder(definition_folder)
+      from_file("#{definition_folder}/stack-definition.yaml")
     end
 
     class NoStackDefinitionConfigurationFile < StandardError; end
