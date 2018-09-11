@@ -23,7 +23,6 @@ module Cloudspin
         @id = id
         @stack_definition = stack_definition
         @working_folder = working_folder
-        # @statefile_folder = Pathname.new(statefile_folder).realdirpath.to_s
         @statefile_folder = statefile_folder
         @configuration = configuration
         @backend_config = {}
@@ -53,10 +52,15 @@ module Cloudspin
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
-            working_folder: "#{base_working_folder}/#{instance_configuration.instance_identifier}",
-            statefile_folder: "#{base_statefile_folder}/#{instance_configuration.instance_identifier}",
+            working_folder: ensure_folder("#{base_working_folder}/#{instance_configuration.instance_identifier}"),
+            statefile_folder: ensure_folder("#{base_statefile_folder}/#{instance_configuration.instance_identifier}"),
             configuration: instance_configuration
           )
+      end
+
+      def self.ensure_folder(folder)
+        FileUtils.mkdir_p folder
+        Pathname.new(folder).realdirpath.to_s
       end
 
       def validate_id(raw_id)

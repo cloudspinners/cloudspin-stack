@@ -69,13 +69,13 @@ module Cloudspin
         Cloudspin::Stack::Instance.from_files(
           instance_configuration_files,
           stack_definition: stack_definition,
-          working_folder: options[:work],
-          statefile_folder: options[:state]
+          base_working_folder: './work',
+          base_statefile_folder: './state'
         )
       end
 
       def stack_definition
-        Cloudspin::Stack::Definition.from_file(options[:terraform_source] + '/stack-definition.yaml')
+        Cloudspin::Stack::Definition.from_file(options[:source] + '/stack-definition.yaml')
       end
 
       def instance_configuration_files
