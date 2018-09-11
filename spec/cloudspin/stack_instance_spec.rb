@@ -28,12 +28,11 @@ RSpec.describe 'Stack::Instance' do
     it 'has the expected stack_identifier' do
       expect(stack_instance.id).to eq('test_stack_instance')
     end
-
   end
 
   describe 'created from files' do
-    let(:working_folder) { Dir.mktmpdir }
-    let(:statefile_folder) { Dir.mktmpdir }
+    let(:working_folder) { Dir.mktmpdir(['', '-work']) }
+    let(:statefile_folder) { Dir.mktmpdir(['', '-state']) }
 
     let(:source_path) {
       src = Dir.mktmpdir
@@ -75,8 +74,8 @@ RSpec.describe 'Stack::Instance' do
         first_config_file,
         second_config_file,
         stack_definition: stack_definition,
-        working_folder: working_folder,
-        statefile_folder: statefile_folder
+        base_working_folder: working_folder,
+        base_statefile_folder: statefile_folder
       )
     }
 
@@ -86,6 +85,14 @@ RSpec.describe 'Stack::Instance' do
 
     it 'adds the instance_identifier to the terraform variables' do
       expect(stack_instance.terraform_variables).to include('instance_identifier' => 'my_stack')
+    end
+
+    it 'will use an instance-specific working folder' do
+      expect(stack_instance.working_folder).to eq("#{working_folder}/my_stack")
+    end
+
+    it 'will use an instance-specific state folder' do
+      expect(stack_instance.statefile_folder).to eq("#{statefile_folder}/my_stack")
     end
 
     it 'is planned without error' do

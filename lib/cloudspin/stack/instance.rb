@@ -23,7 +23,8 @@ module Cloudspin
         @id = id
         @stack_definition = stack_definition
         @working_folder = working_folder
-        @statefile_folder = Pathname.new(statefile_folder).realdirpath.to_s
+        # @statefile_folder = Pathname.new(statefile_folder).realdirpath.to_s
+        @statefile_folder = statefile_folder
         @configuration = configuration
         @backend_config = {}
       end
@@ -31,29 +32,29 @@ module Cloudspin
       def self.from_folder(
             *instance_configuration_files,
             definition_folder:,
-            working_folder:,
-            statefile_folder:
+            base_working_folder:,
+            base_statefile_folder:
       )
         self.from_files(
             instance_configuration_files,
             stack_definition: Definition.from_folder(definition_folder),
-            working_folder: working_folder,
-            statefile_folder: statefile_folder
+            base_working_folder: base_working_folder,
+            base_statefile_folder: base_statefile_folder
           )
       end
 
       def self.from_files(
             *instance_configuration_files,
             stack_definition:,
-            working_folder:,
-            statefile_folder:
+            base_working_folder:,
+            base_statefile_folder:
       )
         instance_configuration = InstanceConfiguration.from_files(stack_definition, instance_configuration_files)
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
-            working_folder: working_folder,
-            statefile_folder: statefile_folder,
+            working_folder: "#{base_working_folder}/#{instance_configuration.instance_identifier}",
+            statefile_folder: "#{base_statefile_folder}/#{instance_configuration.instance_identifier}",
             configuration: instance_configuration
           )
       end
