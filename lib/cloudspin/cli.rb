@@ -30,33 +30,33 @@ module Cloudspin
       :default => './state',
       :desc => 'Folder to create and store local state'
 
-    desc 'up INSTANCE_ID', 'Create or update the stack instance'
+    desc 'up', 'Create or update the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
-    def up(id)
+    def up
       if options[:plan] && options[:dry]
-        puts instance(id).plan_dry
+        puts instance.plan_dry
       elsif options[:plan] && ! options[:dry]
-        puts instance(id).plan
+        puts instance.plan
       elsif ! options[:plan] && options[:dry]
-        puts instance(id).up_dry
+        puts instance.up_dry
       else
-        instance(id).up
+        instance.up
       end
     end
 
-    desc 'down INSTANCE_ID', 'Destroy the stack instance'
+    desc 'down', 'Destroy the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
-    def down(id)
+    def down
       if options[:plan] && options[:dry]
-        puts instance(id).plan_dry(plan_destroy: true)
+        puts instance.plan_dry(plan_destroy: true)
       elsif options[:plan] && ! options[:dry]
-        puts instance(id).plan(plan_destroy: true)
+        puts instance.plan(plan_destroy: true)
       elsif ! options[:plan] && options[:dry]
-        puts instance(id).down_dry
+        puts instance.down_dry
       else
-        instance(id).down
+        instance.down
       end
     end
 
@@ -72,19 +72,14 @@ module Cloudspin
 
     no_commands do
 
-      def instance(id)
-        stack = Cloudspin::Stack::Instance.new(
-          id: id,
+      def instance
+        Cloudspin::Stack::Instance.from_files(
+          options[:file],
           stack_definition: stack_definition,
           backend_config: {},
           working_folder: options[:work],
           statefile_folder: options[:state]
         )
-        options[:file].each { |config_file|
-          stack.add_config_from_yaml(config_file)
-        }
-        stack.add_parameter_values({ :instance_identifier => id })
-        stack
       end
 
       def stack_definition
