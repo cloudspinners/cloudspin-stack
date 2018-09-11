@@ -9,14 +9,12 @@ module Cloudspin
 
       attr_reader :id,
           :working_folder,
-          :backend_config,
           :statefile_folder,
           :configuration
 
       def initialize(
             id:,
             stack_definition:,
-            backend_config:,
             working_folder:,
             statefile_folder:,
             configuration:
@@ -24,23 +22,21 @@ module Cloudspin
         validate_id(id)
         @id = id
         @stack_definition = stack_definition
-        @backend_config = backend_config
         @working_folder = working_folder
         @statefile_folder = Pathname.new(statefile_folder).realdirpath.to_s
         @configuration = configuration
+        @backend_config = {}
       end
 
       def self.from_folder(
             *instance_configuration_files,
             definition_folder:,
-            backend_config:,
             working_folder:,
             statefile_folder:
       )
         self.from_files(
             instance_configuration_files,
             stack_definition: Definition.from_folder(definition_folder),
-            backend_config: backend_config,
             working_folder: working_folder,
             statefile_folder: statefile_folder
           )
@@ -49,7 +45,6 @@ module Cloudspin
       def self.from_files(
             *instance_configuration_files,
             stack_definition:,
-            backend_config:,
             working_folder:,
             statefile_folder:
       )
@@ -57,7 +52,6 @@ module Cloudspin
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
-            backend_config: backend_config,
             working_folder: working_folder,
             statefile_folder: statefile_folder,
             configuration: instance_configuration
@@ -83,7 +77,7 @@ module Cloudspin
         mkdir_p File.dirname(working_folder)
         cp_r @stack_definition.source_path, working_folder
         Dir.chdir(working_folder) do
-          RubyTerraform.init(backend_config: backend_config)
+          RubyTerraform.init(backend_config: @backend_config)
           RubyTerraform.plan(
             destroy: plan_destroy,
             state: terraform_statefile,
@@ -109,7 +103,7 @@ module Cloudspin
         mkdir_p File.dirname(working_folder)
         cp_r @stack_definition.source_path, working_folder
         Dir.chdir(working_folder) do
-          RubyTerraform.init(backend_config: backend_config)
+          RubyTerraform.init(backend_config: @backend_config)
           RubyTerraform.apply(
             auto_approve: true,
             state: terraform_statefile,
@@ -134,7 +128,7 @@ module Cloudspin
         mkdir_p File.dirname(working_folder)
         cp_r @stack_definition.source_path, working_folder
         Dir.chdir(working_folder) do
-          RubyTerraform.init(backend_config: backend_config)
+          RubyTerraform.init(backend_config: @backend_config)
           RubyTerraform.destroy(
             force: true,
             state: terraform_statefile,

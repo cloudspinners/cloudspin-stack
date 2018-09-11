@@ -15,7 +15,6 @@ RSpec.describe 'Stack::Instance' do
       Cloudspin::Stack::Instance.new(
         id: 'test_stack_instance',
         stack_definition: stack_definition,
-        backend_config: {},
         working_folder: working_folder,
         statefile_folder: statefile_folder,
         configuration: instance_configuration
@@ -76,7 +75,6 @@ RSpec.describe 'Stack::Instance' do
         first_config_file,
         second_config_file,
         stack_definition: stack_definition,
-        backend_config: {},
         working_folder: working_folder,
         statefile_folder: statefile_folder
       )
