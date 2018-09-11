@@ -71,8 +71,6 @@ RSpec.describe 'Stack::Instance' do
       tmp.path
     }
 
-
-
     let(:stack_instance) {
       Cloudspin::Stack::Instance.from_files(
         first_config_file,
@@ -86,6 +84,10 @@ RSpec.describe 'Stack::Instance' do
 
     it 'has the expected stack_identifier' do
       expect(stack_instance.id).to eq('my_stack')
+    end
+
+    it 'adds the instance_identifier to the terraform variables' do
+      expect(stack_instance.terraform_variables).to include('instance_identifier' => 'my_stack')
     end
 
     it 'is planned without error' do

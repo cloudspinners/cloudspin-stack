@@ -30,16 +30,16 @@ module Cloudspin
         @configuration = configuration
       end
 
-      def self.from_files(
+      def self.from_folder(
             *instance_configuration_files,
-            stack_definition_folder:,
+            definition_folder:,
             backend_config:,
             working_folder:,
             statefile_folder:
       )
         self.from_files(
             instance_configuration_files,
-            stack_definition: Definition.from_folder(stack_definition_folder),
+            stack_definition: Definition.from_folder(definition_folder),
             backend_config: backend_config,
             working_folder: working_folder,
             statefile_folder: statefile_folder
@@ -68,6 +68,14 @@ module Cloudspin
         raise "Stack instance ID '#{raw_id}' won't work. It needs to work as a filename." if /[^0-9A-Za-z.\-\_]/ =~ raw_id
         raise "Stack instance ID '#{raw_id}' won't work. No double dots allowed." if /\.\./ =~ raw_id
         raise "Stack instance ID '#{raw_id}' won't work. First character should be a letter." if /^[^A-Za-z]/ =~ raw_id
+      end
+
+      def parameter_values
+        configuration.parameter_values
+      end
+
+      def resource_values
+        configuration.resource_values
       end
 
       def plan(plan_destroy: false)
@@ -147,9 +155,9 @@ module Cloudspin
       end
 
       def terraform_variables
-        configuration.parameter_values.merge(configuration.resource_values) { |key, oldval, newval|
+        parameter_values.merge(resource_values) { |key, oldval, newval|
           raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
-        }
+        }.merge({ 'instance_identifier' => id })
       end
 
       def terraform_statefile

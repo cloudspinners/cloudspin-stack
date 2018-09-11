@@ -24,11 +24,13 @@ module Cloudspin
           stack_version: spec_hash.dig('stack', 'version')
         )
       end
+
+      def self.from_folder(definition_folder)
+        from_file("#{definition_folder}/stack-definition.yaml")
+      end
+
     end
 
-    def self.from_folder(definition_folder)
-      from_file("#{definition_folder}/stack-definition.yaml")
-    end
 
     class NoStackDefinitionConfigurationFile < StandardError; end
 
