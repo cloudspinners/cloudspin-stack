@@ -122,6 +122,23 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     end
   end
 
+  describe 'with instance:group set' do
+    let(:stack_definition) {
+      Cloudspin::Stack::Definition.new(
+        source_path: '/some/path',
+        stack_name: 'a_name'
+      )
+    }
+
+    let(:instance_configuration_values) {
+      { 'instance' => { 'group' => 'a_group' } }
+    }
+
+    it 'builds the instance id from the stack name and group' do
+      expect(configuration.instance_identifier).to eq('a_name-a_group')
+    end
+  end
+
   describe 'loaded from files' do
     let(:first_file) {
       tmp = Tempfile.new('first_instance_config.yaml')

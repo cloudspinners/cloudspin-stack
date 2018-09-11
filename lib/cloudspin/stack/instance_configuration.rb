@@ -46,6 +46,8 @@ module Cloudspin
       def instance_identifier
         if instance_values['identifier']
           instance_values['identifier']
+        elsif instance_values['group']
+          stack_name + '-' + instance_values['group']
         else
           stack_name
         end
