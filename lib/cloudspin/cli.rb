@@ -20,8 +20,8 @@ module Cloudspin
 
     class_option :environment,
       :aliases => '-e',
-      :banner => 'YAML-CONFIG-FILE',
-      :desc => 'An environment instance to manage.'
+      :banner => 'environment_id',
+      :desc => 'An environment instance to manage. File ./environments/stack-instance-ENVIRONMENT_ID.yaml must exist.'
 
     desc 'up', 'Create or update the stack instance'
     option :dry, :type => :boolean, :default => false
