@@ -9,28 +9,25 @@ module Cloudspin
 
       attr_reader :id,
           :working_folder,
-          :statefile_folder,
           :configuration
 
       def initialize(
             id:,
             stack_definition:,
             working_folder:,
-            statefile_folder:,
             configuration:
       )
         validate_id(id)
         @id = id
         @stack_definition = stack_definition
         @working_folder   = working_folder
-        @statefile_folder = statefile_folder
         @configuration    = configuration
       end
 
       def self.from_folder(
             *instance_configuration_files,
             definition_folder:,
-            base_folder:,
+            base_folder: '.',
             base_working_folder:
       )
         self.from_files(
@@ -44,7 +41,7 @@ module Cloudspin
       def self.from_files(
             *instance_configuration_files,
             stack_definition:,
-            base_folder:,
+            base_folder: '.',
             base_working_folder:
       )
         instance_configuration = InstanceConfiguration.from_files(
@@ -56,7 +53,6 @@ module Cloudspin
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
             working_folder: ensure_folder("#{base_working_folder}/#{instance_configuration.instance_identifier}"),
-            statefile_folder: ensure_folder(instance_configuration.terraform_backend['statefile_folder']),
             configuration: instance_configuration
           )
       end
@@ -84,24 +80,20 @@ module Cloudspin
         RubyTerraform.clean(directory: working_folder)
         mkdir_p File.dirname(working_folder)
         cp_r @stack_definition.source_path, working_folder
+        ensure_state_folder
         Dir.chdir(working_folder) do
           RubyTerraform.init(backend_config: @backend_config)
-          RubyTerraform.plan(
-            destroy: plan_destroy,
-            state: terraform_statefile,
-            vars: terraform_variables
-          )
+          RubyTerraform.plan(terraform_command_parameters(destroy: plan_destroy))
         end
       end
 
       def plan_dry(plan_destroy: false)
         plan_command = RubyTerraform::Commands::Plan.new
         command_line_builder = plan_command.instantiate_builder
-        configured_command = plan_command.configure_command(command_line_builder, {
-          :destroy => plan_destroy,
-          :state => terraform_statefile,
-          :vars => terraform_variables
-        })
+        configured_command = plan_command.configure_command(
+            command_line_builder,
+            terraform_command_parameters(:destroy => plan_destroy)
+        )
         built_command = configured_command.build
         "cd #{working_folder} && #{built_command.to_s}"
       end
@@ -110,23 +102,17 @@ module Cloudspin
         RubyTerraform.clean(directory: working_folder)
         mkdir_p File.dirname(working_folder)
         cp_r @stack_definition.source_path, working_folder
+        ensure_state_folder
         Dir.chdir(working_folder) do
           RubyTerraform.init(backend_config: @backend_config)
-          RubyTerraform.apply(
-            auto_approve: true,
-            state: terraform_statefile,
-            vars: terraform_variables
-          )
+          RubyTerraform.apply(terraform_command_parameters(auto_approve: true))
         end
       end
 
       def up_dry
         up_command = RubyTerraform::Commands::Apply.new
         command_line_builder = up_command.instantiate_builder
-        configured_command = up_command.configure_command(command_line_builder, {
-          :state => terraform_statefile,
-          :vars => terraform_variables
-        })
+        configured_command = up_command.configure_command(command_line_builder, terraform_command_parameters)
         built_command = configured_command.build
         "cd #{working_folder} && #{built_command.to_s}"
       end
@@ -135,25 +121,32 @@ module Cloudspin
         RubyTerraform.clean(directory: working_folder)
         mkdir_p File.dirname(working_folder)
         cp_r @stack_definition.source_path, working_folder
+        ensure_state_folder
         Dir.chdir(working_folder) do
           RubyTerraform.init(backend_config: @backend_config)
-          RubyTerraform.destroy(
-            force: true,
-            state: terraform_statefile,
-            vars: terraform_variables
-          )
+          RubyTerraform.destroy(terraform_command_parameters(force: true))
         end
       end
 
       def down_dry
         down_command = RubyTerraform::Commands::Destroy.new
         command_line_builder = down_command.instantiate_builder
-        configured_command = down_command.configure_command(command_line_builder, {
-          :state => terraform_statefile,
-          :vars => terraform_variables
-        })
+        configured_command = down_command.configure_command(command_line_builder, terraform_command_parameters)
         built_command = configured_command.build
         "cd #{working_folder} && #{built_command.to_s}"
+      end
+
+      def ensure_state_folder
+        if configuration.has_local_state_configuration?
+          Instance.ensure_folder(configuration.terraform_backend['statefile_folder'])
+        end
+      end
+
+      def terraform_command_parameters(added_parameters = {})
+        {
+          state: terraform_statefile,
+          vars: terraform_variables
+        }.merge(added_parameters)
       end
 
       def terraform_variables
@@ -163,7 +156,27 @@ module Cloudspin
       end
 
       def terraform_statefile
-        statefile_folder + "/stack-#{id}.tfstate"
+        if configuration.has_local_state_configuration?
+          local_state_configuration
+        elsif configuration.has_remote_state_configuration?
+          remote_state_configuration
+        else
+          raise "InstanceConfiguration has neither local nor remote state configured"
+        end
+      end
+
+      def local_state_configuration
+        {
+          'state' => configuration.terraform_backend['statefile_folder']
+        }
+      end
+
+      def remote_state_configuration
+        {
+          'bucket' => configuration.terraform_backend['bucket'],
+          'region' => configuration.terraform_backend['region'],
+          'key' => configuration.terraform_backend['key']
+        }
       end
 
     end

@@ -16,7 +16,6 @@ RSpec.describe 'Stack::Instance' do
         id: 'test_stack_instance',
         stack_definition: stack_definition,
         working_folder: working_folder,
-        statefile_folder: statefile_folder,
         configuration: instance_configuration
       )
     }
@@ -89,10 +88,6 @@ RSpec.describe 'Stack::Instance' do
 
     it 'will use an instance-specific working folder' do
       expect(stack_instance.working_folder).to match(/-work\/my_stack$/)
-    end
-
-    it 'will use an instance-specific state folder' do
-      expect(stack_instance.statefile_folder).to match(/state\/my_stack$/)
     end
 
     it 'is planned without error' do
