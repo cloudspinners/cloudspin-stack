@@ -67,6 +67,10 @@ module Cloudspin
         ! @terraform_backend['statefile_folder'].nil?
       end
 
+      def local_statefile
+        "#{@terraform_backend['statefile_folder']}/#{instance_identifier}.tfstate"
+      end
+
       def has_remote_state_configuration?
         ! @terraform_backend['key'].nil?
       end

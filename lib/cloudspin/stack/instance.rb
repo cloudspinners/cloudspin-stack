@@ -83,6 +83,7 @@ module Cloudspin
         ensure_state_folder
         Dir.chdir(working_folder) do
           RubyTerraform.init(backend_config: @backend_config)
+puts "KSM: RubyTerraform.plan(#{terraform_command_parameters(destroy: plan_destroy)})"
           RubyTerraform.plan(terraform_command_parameters(destroy: plan_destroy))
         end
       end
@@ -144,9 +145,8 @@ module Cloudspin
 
       def terraform_command_parameters(added_parameters = {})
         {
-          state: terraform_statefile,
           vars: terraform_variables
-        }.merge(added_parameters)
+        }.merge(terraform_state_configuration).merge(added_parameters)
       end
 
       def terraform_variables
@@ -155,7 +155,7 @@ module Cloudspin
         }.merge({ 'instance_identifier' => id })
       end
 
-      def terraform_statefile
+      def terraform_state_configuration
         if configuration.has_local_state_configuration?
           local_state_configuration
         elsif configuration.has_remote_state_configuration?
@@ -167,15 +167,15 @@ module Cloudspin
 
       def local_state_configuration
         {
-          'state' => configuration.terraform_backend['statefile_folder']
+          state: configuration.local_statefile
         }
       end
 
       def remote_state_configuration
         {
-          'bucket' => configuration.terraform_backend['bucket'],
-          'region' => configuration.terraform_backend['region'],
-          'key' => configuration.terraform_backend['key']
+          bucket: configuration.terraform_backend['bucket'],
+          region: configuration.terraform_backend['region'],
+          key: configuration.terraform_backend['key']
         }
       end
 
