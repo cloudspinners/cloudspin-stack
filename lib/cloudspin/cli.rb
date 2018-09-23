@@ -69,8 +69,7 @@ module Cloudspin
         Cloudspin::Stack::Instance.from_files(
           instance_configuration_files,
           stack_definition: stack_definition,
-          base_working_folder: './work',
-          base_statefile_folder: './state'
+          base_working_folder: './work'
         )
       end
 

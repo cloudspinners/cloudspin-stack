@@ -13,8 +13,8 @@ RSpec.describe 'Stack::Instance' do
     Cloudspin::Stack::Instance.new(
       id: 'stack_one',
       stack_definition: stack_definition,
-      working_folder: '/dev/null/work/stack_one',
       statefile_folder: '/dev/null/state/stack_one',
+      working_folder: '/dev/null/work/stack_one',
       configuration: instance_configuration
     )
   }
@@ -23,8 +23,8 @@ RSpec.describe 'Stack::Instance' do
     Cloudspin::Stack::Instance.new(
       id: 'stack_two',
       stack_definition: stack_definition,
-      working_folder: '/dev/null/work/stack_two',
       statefile_folder: '/dev/null/state/stack_two',
+      working_folder: '/dev/null/work/stack_two',
       configuration: instance_configuration
     )
   }

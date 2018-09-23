@@ -22,7 +22,7 @@ RSpec.describe 'Stack::Instance' do
     }
 
     let(:instance_configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(stack_definition)
+      Cloudspin::Stack::InstanceConfiguration.new(stack_definition, '.')
     }
 
     it 'has the expected stack_identifier' do
@@ -32,7 +32,7 @@ RSpec.describe 'Stack::Instance' do
 
   describe 'created from files' do
     let(:working_folder) { Dir.mktmpdir(['', '-work']) }
-    let(:statefile_folder) { Dir.mktmpdir(['', '-state']) }
+    let(:base_folder) { Dir.mktmpdir(['cloudspin-']) }
 
     let(:source_path) {
       src = Dir.mktmpdir
@@ -74,8 +74,8 @@ RSpec.describe 'Stack::Instance' do
         first_config_file,
         second_config_file,
         stack_definition: stack_definition,
+        base_folder: base_folder,
         base_working_folder: working_folder,
-        base_statefile_folder: statefile_folder
       )
     }
 
@@ -92,7 +92,7 @@ RSpec.describe 'Stack::Instance' do
     end
 
     it 'will use an instance-specific state folder' do
-      expect(stack_instance.statefile_folder).to match(/-state\/my_stack$/)
+      expect(stack_instance.statefile_folder).to match(/state\/my_stack$/)
     end
 
     it 'is planned without error' do

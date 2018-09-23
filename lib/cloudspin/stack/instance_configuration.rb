@@ -7,21 +7,31 @@ module Cloudspin
 
       attr_reader :stack_definition
       attr_reader :stack_name
+      attr_reader :base_folder
 
       attr_reader :instance_values
       attr_reader :parameter_values
       attr_reader :resource_values
 
-      def initialize(stack_definition)
+      attr_reader :terraform_backend
+
+      def initialize(stack_definition, base_folder = '.')
         @stack_definition = stack_definition
         @stack_name = stack_definition.name
+        @base_folder = base_folder
         @instance_values = {}
         @parameter_values = {}
         @resource_values = {}
+        @terraform_backend = {}
+        @state_folder = nil
       end
 
-      def self.from_files(stack_definition, *configuration_files)
-        config = self.new(stack_definition)
+      def self.from_files(
+          *configuration_files,
+          stack_definition:,
+          base_folder: '.'
+      )
+        config = self.new(stack_definition, base_folder)
         configuration_files.flatten.each { |config_file|
           config.add_values(load_file(config_file))
         }
@@ -40,7 +50,25 @@ module Cloudspin
         @instance_values.merge!(values['instance']) if values['instance']
         @parameter_values.merge!(values['parameters']) if values['parameters']
         @resource_values.merge!(values['resources']) if values['resources']
+        add_terraform_backend(values['terraform_backend'])
         self
+      end
+
+      def add_terraform_backend(values_to_add)
+        @terraform_backend.merge!(values_to_add) if values_to_add
+        if @terraform_backend.empty?
+          @terraform_backend['statefile_folder'] = default_state_folder
+        else
+          @terraform_backend['key'] = default_state_key
+        end
+      end
+
+      def default_state_folder
+        "#{base_folder}/state/#{instance_identifier}"
+      end
+
+      def default_state_key
+        "/#{instance_identifier}.tfstate"
       end
 
       def instance_identifier
@@ -57,7 +85,8 @@ module Cloudspin
         {
           'instance' => instance_values,
           'parameters' => parameter_values,
-          'resources' => resource_values
+          'resources' => resource_values,
+          'terraform_backend' => terraform_backend
         }.to_s
       end
 

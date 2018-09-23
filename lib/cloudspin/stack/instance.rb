@@ -22,38 +22,41 @@ module Cloudspin
         validate_id(id)
         @id = id
         @stack_definition = stack_definition
-        @working_folder = working_folder
+        @working_folder   = working_folder
         @statefile_folder = statefile_folder
-        @configuration = configuration
-        @backend_config = {}
+        @configuration    = configuration
       end
 
       def self.from_folder(
             *instance_configuration_files,
             definition_folder:,
-            base_working_folder:,
-            base_statefile_folder:
+            base_folder:,
+            base_working_folder:
       )
         self.from_files(
             instance_configuration_files,
             stack_definition: Definition.from_folder(definition_folder),
-            base_working_folder: base_working_folder,
-            base_statefile_folder: base_statefile_folder
+            base_folder: base_folder,
+            base_working_folder: base_working_folder
           )
       end
 
       def self.from_files(
             *instance_configuration_files,
             stack_definition:,
-            base_working_folder:,
-            base_statefile_folder:
+            base_folder:,
+            base_working_folder:
       )
-        instance_configuration = InstanceConfiguration.from_files(stack_definition, instance_configuration_files)
+        instance_configuration = InstanceConfiguration.from_files(
+          instance_configuration_files,
+          stack_definition: stack_definition,
+          base_folder: base_folder
+        )
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
             working_folder: ensure_folder("#{base_working_folder}/#{instance_configuration.instance_identifier}"),
-            statefile_folder: ensure_folder("#{base_statefile_folder}/#{instance_configuration.instance_identifier}"),
+            statefile_folder: ensure_folder(instance_configuration.terraform_backend['statefile_folder']),
             configuration: instance_configuration
           )
       end
