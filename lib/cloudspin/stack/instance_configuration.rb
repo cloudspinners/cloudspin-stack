@@ -15,15 +15,25 @@ module Cloudspin
 
       attr_reader :terraform_backend
 
-      def initialize(stack_definition, base_folder = '.')
+      def initialize(
+          configuration_values: {},
+          stack_definition:,
+          base_folder: '.'
+      )
         @stack_definition = stack_definition
         @stack_name = stack_definition.name
         @base_folder = base_folder
-        @instance_values = {}
-        @parameter_values = {}
-        @resource_values = {}
-        @terraform_backend = {}
-        @state_folder = nil
+
+        @instance_values = configuration_values['instance'] || {}
+        @parameter_values = configuration_values['parameters'] || {}
+        @resource_values = configuration_values['resources'] || {}
+
+        @terraform_backend = configuration_values['terraform_backend'] || {}
+        if @terraform_backend.empty?
+          @terraform_backend['statefile_folder'] = default_state_folder
+        else
+          @terraform_backend['key'] = default_state_key
+        end
       end
 
       def self.from_files(
@@ -31,35 +41,22 @@ module Cloudspin
           stack_definition:,
           base_folder: '.'
       )
-        config = self.new(stack_definition, base_folder)
+        configuration_values = {}
         configuration_files.flatten.each { |config_file|
-          config.add_values(load_file(config_file))
+          configuration_values = configuration_values.deep_merge(yaml_file_to_hash(config_file))
         }
-        config
+        self.new(
+          stack_definition: stack_definition,
+          base_folder: base_folder,
+          configuration_values: configuration_values
+        )
       end
 
-      def self.load_file(yaml_file)
+      def self.yaml_file_to_hash(yaml_file)
         if File.exists?(yaml_file)
           YAML.load_file(yaml_file) || {}
         else
           {}
-        end
-      end
-
-      def add_values(values)
-        @instance_values.merge!(values['instance']) if values['instance']
-        @parameter_values.merge!(values['parameters']) if values['parameters']
-        @resource_values.merge!(values['resources']) if values['resources']
-        add_terraform_backend(values['terraform_backend'])
-        self
-      end
-
-      def add_terraform_backend(values_to_add)
-        @terraform_backend.merge!(values_to_add) if values_to_add
-        if @terraform_backend.empty?
-          @terraform_backend['statefile_folder'] = default_state_folder
-        else
-          @terraform_backend['key'] = default_state_key
         end
       end
 
@@ -95,6 +92,7 @@ module Cloudspin
 
       def to_s
         {
+          'instance_identifier' => instance_identifier,
           'instance' => instance_values,
           'parameters' => parameter_values,
           'resources' => resource_values,
@@ -107,3 +105,10 @@ module Cloudspin
   end
 end
 
+# hat tip: https://stackoverflow.com/questions/9381553/ruby-merge-nested-hash
+class ::Hash
+  def deep_merge(second)
+    merger = proc { |key, v1, v2| Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : Array === v1 && Array === v2 ? v1 | v2 : [:undefined, nil, :nil].include?(v2) ? v1 : v2 }
+    self.merge(second.to_h, &merger)
+  end
+end

@@ -6,7 +6,13 @@ RSpec.describe 'Stack::Instance' do
   }
 
   let(:instance_configuration) {
-    Cloudspin::Stack::InstanceConfiguration.new(stack_definition)
+    Cloudspin::Stack::InstanceConfiguration.new(stack_definition: stack_definition, base_folder: base_folder)
+  }
+
+  let(:base_folder) {
+    folder = Dir.mktmpdir(['cloudspin-'])
+    FileUtils.mkdir_p "#{folder}/state"
+    folder
   }
 
   let(:stack_instance_one) {

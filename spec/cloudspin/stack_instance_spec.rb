@@ -5,11 +5,16 @@ RSpec.describe 'Stack::Instance' do
     Cloudspin::Stack::Definition.new(source_path: source_path, stack_name: 'my_stack')
   }
 
+  let(:base_folder) {
+    folder = Dir.mktmpdir(['cloudspin-'])
+    FileUtils.mkdir_p "#{folder}/state"
+    folder
+  }
+
   describe 'created from code' do
 
     let(:source_path) { '/does/not/matter' }
     let(:working_folder) { '/does/not/matter/work' }
-    let(:statefile_folder) { '/tmp/state' }
 
     let(:stack_instance) {
       Cloudspin::Stack::Instance.new(
@@ -21,7 +26,10 @@ RSpec.describe 'Stack::Instance' do
     }
 
     let(:instance_configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(stack_definition, '.')
+      Cloudspin::Stack::InstanceConfiguration.new(
+        stack_definition: stack_definition,
+        base_folder: base_folder
+      )
     }
 
     it 'has the expected stack_identifier' do
@@ -30,8 +38,8 @@ RSpec.describe 'Stack::Instance' do
   end
 
   describe 'created from files' do
+
     let(:working_folder) { Dir.mktmpdir(['', '-work']) }
-    let(:base_folder) { Dir.mktmpdir(['cloudspin-']) }
 
     let(:source_path) {
       src = Dir.mktmpdir
@@ -43,6 +51,8 @@ RSpec.describe 'Stack::Instance' do
       tmp = Tempfile.new('first_instance_config.yaml')
       tmp.write(<<~FIRST_YAML_FILE
         ---
+        instance:
+          me: you
         parameters:
           x: 6
         resources:
@@ -57,6 +67,8 @@ RSpec.describe 'Stack::Instance' do
       tmp = Tempfile.new('second_instance_config.yaml')
       tmp.write(<<~SECOND_YAML_FILE
         ---
+        instance:
+          this: that
         parameters:
           x: 9
           y: 8
@@ -80,6 +92,11 @@ RSpec.describe 'Stack::Instance' do
 
     it 'has the expected stack_identifier' do
       expect(stack_instance.id).to eq('my_stack')
+    end
+
+    it 'has all the instance values from both files' do
+      expect(stack_instance.configuration.instance_values['this']).to eq('that')
+      expect(stack_instance.configuration.instance_values['me']).to eq('you')
     end
 
     it 'adds the instance_identifier to the terraform variables' do

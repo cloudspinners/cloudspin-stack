@@ -1,5 +1,12 @@
 RSpec.describe 'Stack::InstanceConfiguration' do
 
+  # SMELL: We shouldn't need to have a physical state folder if we don't have an instance
+  let(:base_folder) {
+    folder = Dir.mktmpdir(['cloudspin-'])
+    FileUtils.mkdir_p "#{folder}/state"
+    folder
+  }
+
   let(:stack_definition) { 
       Cloudspin::Stack::Definition.new(
         source_path: '/some/path',
@@ -10,8 +17,11 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   let(:instance_configuration_values) {{}} 
 
   let(:configuration) {
-    Cloudspin::Stack::InstanceConfiguration.new(stack_definition, '.')
-      .add_values(instance_configuration_values)
+    Cloudspin::Stack::InstanceConfiguration.new(
+      configuration_values: instance_configuration_values,
+      stack_definition: stack_definition,
+      base_folder: base_folder
+    )
   }
 
   describe 'with no configuration' do
@@ -24,19 +34,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     end
 
     it 'sets the expected local state folder' do
-      expect(configuration.terraform_backend['statefile_folder']).to eq('./state/a_name')
-    end
-  end
-
-
-  describe 'with an overridden base_folder' do
-    let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(stack_definition, '/some/other/folder')
-        .add_values(instance_configuration_values)
-    }
-
-    it 'sets the local state folder there' do
-      expect(configuration.terraform_backend['statefile_folder']).to eq('/some/other/folder/state/a_name')
+      expect(configuration.terraform_backend['statefile_folder']).to match /\/state\/a_name$/
     end
   end
 
@@ -76,7 +74,11 @@ RSpec.describe 'Stack::InstanceConfiguration' do
       }
     }
     let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(stack_definition, '.').add_values(first_config).add_values(second_config)
+      Cloudspin::Stack::InstanceConfiguration.new(
+        configuration_values: first_config.merge(second_config),
+        stack_definition: stack_definition,
+        base_folder: base_folder
+      )
     }
 
     it 'the first value is used if it\'s the only one' do
@@ -165,7 +167,11 @@ RSpec.describe 'Stack::InstanceConfiguration' do
       }
     }
     let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(stack_definition, '.').add_values(terraform_config)
+      Cloudspin::Stack::InstanceConfiguration.new(
+        configuration_values: terraform_config,
+        stack_definition: stack_definition,
+        base_folder: base_folder
+      )
     }
 
     it 'does not set a local state folder' do
@@ -212,7 +218,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     }
 
     let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.from_files(first_file, second_file, stack_definition: stack_definition, base_folder: '.')
+      Cloudspin::Stack::InstanceConfiguration.from_files(first_file, second_file, stack_definition: stack_definition, base_folder: base_folder)
     }
 
     it 'uses the value from the first file if it\'s only set there' do

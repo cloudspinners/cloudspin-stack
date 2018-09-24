@@ -26,7 +26,9 @@ module Cloudspin
     desc 'up', 'Create or update the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
+    option :'show-init', :type => :boolean, :default => true
     def up
+      puts instance.init_dry if options[:'show-init']
       if options[:plan] && options[:dry]
         puts instance.plan_dry
       elsif options[:plan] && ! options[:dry]
@@ -41,7 +43,9 @@ module Cloudspin
     desc 'down', 'Destroy the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false
+    option :'show-init', :type => :boolean, :default => true
     def down
+      puts instance.init_dry if options[:'show-init']
       if options[:plan] && options[:dry]
         puts instance.plan_dry(plan_destroy: true)
       elsif options[:plan] && ! options[:dry]

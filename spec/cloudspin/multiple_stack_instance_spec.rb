@@ -1,7 +1,12 @@
 
 RSpec.describe 'Multiple Stack::Instance/s' do
 
-  let(:base_folder) { Dir.mktmpdir(['cloudspin-']) }
+  let(:base_folder) {
+    folder = Dir.mktmpdir(['cloudspin-'])
+    FileUtils.mkdir_p "#{folder}/state"
+    folder
+  }
+
   let(:base_working_folder) { Dir.mktmpdir(['cloudspin-', '-work']) }
 
   let(:source_path) {
@@ -43,8 +48,6 @@ RSpec.describe 'Multiple Stack::Instance/s' do
   }
 
   let(:stack_instance_one) {
-puts "KSM: stack_instance_one, stack_definition: #{stack_definition.to_yaml}"
-puts "KSM: stack_definition.name: #{stack_definition.name}"
     Cloudspin::Stack::Instance.from_files(
       first_config_file,
       stack_definition: stack_definition,

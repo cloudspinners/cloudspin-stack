@@ -82,7 +82,7 @@ module Cloudspin
         cp_r @stack_definition.source_path, working_folder
         ensure_state_folder
         Dir.chdir(working_folder) do
-          RubyTerraform.init(backend_config: @backend_config)
+          terraform_init
           RubyTerraform.plan(terraform_command_parameters(destroy: plan_destroy))
         end
       end
@@ -91,8 +91,8 @@ module Cloudspin
         plan_command = RubyTerraform::Commands::Plan.new
         command_line_builder = plan_command.instantiate_builder
         configured_command = plan_command.configure_command(
-            command_line_builder,
-            terraform_command_parameters(:destroy => plan_destroy)
+          command_line_builder,
+          terraform_command_parameters(:destroy => plan_destroy)
         )
         built_command = configured_command.build
         "cd #{working_folder} && #{built_command.to_s}"
@@ -104,7 +104,7 @@ module Cloudspin
         cp_r @stack_definition.source_path, working_folder
         ensure_state_folder
         Dir.chdir(working_folder) do
-          RubyTerraform.init(backend_config: @backend_config)
+          terraform_init
           RubyTerraform.apply(terraform_command_parameters(auto_approve: true))
         end
       end
@@ -123,7 +123,7 @@ module Cloudspin
         cp_r @stack_definition.source_path, working_folder
         ensure_state_folder
         Dir.chdir(working_folder) do
-          RubyTerraform.init(backend_config: @backend_config)
+          terraform_init
           RubyTerraform.destroy(terraform_command_parameters(force: true))
         end
       end
@@ -136,6 +136,32 @@ module Cloudspin
         "cd #{working_folder} && #{built_command.to_s}"
       end
 
+      def terraform_init
+        RubyTerraform.init(terraform_init_params)
+      end
+
+      def init_dry
+        init_command = RubyTerraform::Commands::Init.new
+        command_line_builder = init_command.instantiate_builder
+        configured_command = init_command.configure_command(
+          command_line_builder,
+          terraform_init_params
+        )
+        built_command = configured_command.build
+        "cd #{working_folder} && #{built_command.to_s}"
+      end
+
+      def terraform_init_params
+        if configuration.has_remote_state_configuration?
+          {
+            backend: 's3',
+            backend_config: backend_parameters
+          }
+        else
+          {}
+        end
+      end
+
       def ensure_state_folder
         if configuration.has_local_state_configuration?
           Instance.ensure_folder(configuration.terraform_backend['statefile_folder'])
@@ -145,7 +171,7 @@ module Cloudspin
       def terraform_command_parameters(added_parameters = {})
         {
           vars: terraform_variables
-        }.merge(terraform_state_configuration).merge(added_parameters)
+        }.merge(local_state_parameters).merge(added_parameters)
       end
 
       def terraform_variables
@@ -154,29 +180,23 @@ module Cloudspin
         }.merge({ 'instance_identifier' => id })
       end
 
-      def terraform_state_configuration
+      def local_state_parameters
         if configuration.has_local_state_configuration?
-          local_state_configuration
-        elsif configuration.has_remote_state_configuration?
-          # BUT, probably not here, not a -var
-          remote_state_configuration
+          { state: configuration.local_statefile }
         else
-          raise "InstanceConfiguration has neither local nor remote state configured"
+          {}
         end
       end
 
-      def local_state_configuration
-        {
-          state: configuration.local_statefile
-        }
-      end
-
-      def remote_state_configuration
-        {
-          'backend-config' => "bucket=#{configuration.terraform_backend['bucket']}",
-          'backend-config' => "region=#{configuration.terraform_backend['region']}",
-          'backend-config' => "key=#{configuration.terraform_backend['key']}"
-        }
+      def backend_parameters
+        if configuration.has_remote_state_configuration?
+          {
+            'bucket' => configuration.terraform_backend['bucket'],
+            'key' => configuration.terraform_backend['key']
+          }
+        else
+          {}
+        end
       end
 
     end
