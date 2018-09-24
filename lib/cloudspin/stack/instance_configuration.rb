@@ -76,7 +76,7 @@ module Cloudspin
       end
 
       def default_state_folder
-        "#{base_folder}/state/#{instance_identifier}"
+        Pathname.new("#{base_folder}/state/#{instance_identifier}").realdirpath.to_s
       end
 
       def default_state_key

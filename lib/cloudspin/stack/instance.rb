@@ -83,7 +83,6 @@ module Cloudspin
         ensure_state_folder
         Dir.chdir(working_folder) do
           RubyTerraform.init(backend_config: @backend_config)
-puts "KSM: RubyTerraform.plan(#{terraform_command_parameters(destroy: plan_destroy)})"
           RubyTerraform.plan(terraform_command_parameters(destroy: plan_destroy))
         end
       end
@@ -159,6 +158,7 @@ puts "KSM: RubyTerraform.plan(#{terraform_command_parameters(destroy: plan_destr
         if configuration.has_local_state_configuration?
           local_state_configuration
         elsif configuration.has_remote_state_configuration?
+          # BUT, probably not here, not a -var
           remote_state_configuration
         else
           raise "InstanceConfiguration has neither local nor remote state configured"
@@ -173,9 +173,9 @@ puts "KSM: RubyTerraform.plan(#{terraform_command_parameters(destroy: plan_destr
 
       def remote_state_configuration
         {
-          bucket: configuration.terraform_backend['bucket'],
-          region: configuration.terraform_backend['region'],
-          key: configuration.terraform_backend['key']
+          'backend-config' => "bucket=#{configuration.terraform_backend['bucket']}",
+          'backend-config' => "region=#{configuration.terraform_backend['region']}",
+          'backend-config' => "key=#{configuration.terraform_backend['key']}"
         }
       end
 
