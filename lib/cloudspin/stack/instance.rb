@@ -154,7 +154,7 @@ module Cloudspin
       def terraform_init_params
         if configuration.has_remote_state_configuration?
           {
-            backend: 's3',
+            backend: 'true',
             backend_config: backend_parameters
           }
         else
@@ -190,10 +190,7 @@ module Cloudspin
 
       def backend_parameters
         if configuration.has_remote_state_configuration?
-          {
-            'bucket' => configuration.terraform_backend['bucket'],
-            'key' => configuration.terraform_backend['key']
-          }
+          configuration.terraform_backend
         else
           {}
         end

@@ -78,7 +78,7 @@ module Cloudspin
       end
 
       def default_state_key
-        "/#{instance_identifier}.tfstate"
+        "#{instance_identifier}.tfstate"
       end
 
       def instance_identifier
