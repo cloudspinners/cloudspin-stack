@@ -8,11 +8,10 @@ module Cloudspin
       attr_reader :version
       attr_reader :source_path
 
-      def initialize(source_path:, stack_name:, stack_version: '0', github_tag: false)
+      def initialize(source_path:, stack_name:, stack_version: '0')
         @source_path = source_path
         @name = stack_name
         @version = stack_version
-        @github_tag = github_tag && /^(true|yes|1)$/i.match(github_tag)
       end
 
       def self.from_file(specfile)
@@ -22,17 +21,12 @@ module Cloudspin
         self.new(
           source_path: source_path,
           stack_name: spec_hash.dig('stack', 'name'),
-          stack_version: spec_hash.dig('stack', 'version'),
-          github_tag: spec_hash.dig('stack', 'github_tag')
+          stack_version: spec_hash.dig('stack', 'version')
         )
       end
 
       def self.from_folder(definition_folder)
         from_file("#{definition_folder}/stack-definition.yaml")
-      end
-
-      def github_tag?
-        @github_tag
       end
 
     end
