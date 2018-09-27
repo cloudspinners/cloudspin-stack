@@ -183,7 +183,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     end
 
     it 'sets the key' do
-      expect(configuration.terraform_backend['key']).to eq('/a_name.tfstate')
+      expect(configuration.terraform_backend['key']).to eq('a_name.tfstate')
     end
 
   end

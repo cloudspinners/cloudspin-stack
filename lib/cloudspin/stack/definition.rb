@@ -12,7 +12,7 @@ module Cloudspin
         @source_path = source_path
         @name = stack_name
         @version = stack_version
-        @github_tag = !github_tag.nil? && (github_tag || /^(true|yes|1)$/i.match(github_tag))
+        @github_tag = github_tag && /^(true|yes|1)$/i.match(github_tag)
       end
 
       def self.from_file(specfile)

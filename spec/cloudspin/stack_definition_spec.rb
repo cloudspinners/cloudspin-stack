@@ -3,7 +3,6 @@ require 'tempfile'
 RSpec.describe 'Stack::Definition' do
 
   describe 'created from code' do
-
     let(:stack_definition) {
       Cloudspin::Stack::Definition.new(
         source_path: '/some/path',
@@ -23,12 +22,9 @@ RSpec.describe 'Stack::Definition' do
     it 'has the defined version' do
       expect(stack_definition.version).to eq('0.0.0-x')
     end
-
   end
 
-
   describe 'defined from yaml spec file' do
-
     let(:yaml_file) {
       tmp = Tempfile.new('stack_definition_spec.yaml')
       tmp.write(<<~YAML_FILE
