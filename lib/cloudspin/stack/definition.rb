@@ -16,7 +16,7 @@ module Cloudspin
       end
 
       def self.from_file(specfile)
-        raise NoStackDefinitionConfigurationFile unless File.exists?(specfile)
+        raise NoStackDefinitionConfigurationFileError, specfile unless File.exists?(specfile)
         source_path = File.dirname(specfile)
         spec_hash = YAML.load_file(specfile)
         self.new(
@@ -38,7 +38,7 @@ module Cloudspin
     end
 
 
-    class NoStackDefinitionConfigurationFile < StandardError; end
+    class NoStackDefinitionConfigurationFileError < StandardError; end
 
   end
 end
