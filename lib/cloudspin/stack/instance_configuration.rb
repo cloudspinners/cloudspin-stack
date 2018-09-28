@@ -17,11 +17,12 @@ module Cloudspin
 
       def initialize(
           configuration_values: {},
+          stack_name: nil,
           stack_definition:,
           base_folder: '.'
       )
         @stack_definition = stack_definition
-        @stack_name = stack_definition.name
+        @stack_name = stack_name || stack_definition.name
         @base_folder = base_folder
 
         @instance_values = configuration_values['instance'] || {}
@@ -38,6 +39,7 @@ module Cloudspin
 
       def self.from_files(
           *configuration_files,
+          stack_name: nil,
           stack_definition:,
           base_folder: '.'
       )
@@ -47,6 +49,7 @@ module Cloudspin
         }
         self.new(
           stack_definition: stack_definition,
+          stack_name: stack_name,
           base_folder: base_folder,
           configuration_values: configuration_values
         )

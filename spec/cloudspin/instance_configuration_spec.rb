@@ -8,10 +8,10 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   }
 
   let(:stack_definition) { 
-      Cloudspin::Stack::Definition.new(
-        source_path: '/some/path',
-        stack_name: 'a_name'
-      )
+    Cloudspin::Stack::Definition.new(
+      source_path: '/some/path',
+      stack_name: 'a_name'
+    )
   }
 
   let(:instance_configuration_values) {{}} 
@@ -41,7 +41,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   describe 'with a single set of configuration' do
     let(:instance_configuration_values) {
       {
-        'instance' => { 'option' => 'value_x' },
+        'instance' => { 'option' => 'value_x', 'group' => 'some_other_group' },
         'parameters' => { 'option' => 'value_y' },
         'resources' => { 'option' => 'value_z' }
       }
@@ -57,6 +57,45 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
     it 'has the expected resource value' do
       expect(configuration.resource_values['option']).to eq('value_z')
+    end
+
+    it 'has the expected instance_identifier' do
+      expect(configuration.instance_identifier).to eq('a_name-some_other_group')
+    end
+  end
+
+  describe 'with stack_name overridden' do
+    let(:configuration) {
+      Cloudspin::Stack::InstanceConfiguration.new(
+        stack_name: 'my_special_stack_name',
+        stack_definition: stack_definition,
+        base_folder: base_folder
+      )
+    }
+
+    it 'uses the overridden name as the instance_identifier' do
+      expect(configuration.instance_identifier).to eq('my_special_stack_name')
+    end
+  end
+
+  describe 'with stack_name overridden and group set' do
+    let(:instance_configuration_values) {
+      {
+        'instance' => { 'group' => 'something_different' }
+      }
+    }
+
+    let(:configuration) {
+      Cloudspin::Stack::InstanceConfiguration.new(
+        configuration_values: instance_configuration_values,
+        stack_name: 'another_stack_name',
+        stack_definition: stack_definition,
+        base_folder: base_folder
+      )
+    }
+
+    it 'uses the overridden name as the instance_identifier' do
+      expect(configuration.instance_identifier).to eq('another_stack_name-something_different')
     end
   end
 
@@ -102,8 +141,6 @@ RSpec.describe 'Stack::InstanceConfiguration' do
       )
     }
 
-    let(:instance_configuration_values) {{}}
-
     it 'is set in the instance configuration' do
       expect(configuration.stack_name).to eq('a_name')
     end
@@ -119,7 +156,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
     let(:instance_configuration_values) {
       {
-        'instance' => { 'identifier' => 'overridden_identifier' },
+        'instance' => { 'identifier' => 'overridden_identifier' }
       }
     }
 
