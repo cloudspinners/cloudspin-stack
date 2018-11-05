@@ -28,14 +28,6 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     it 'uses the definition name as the instance_identifier' do
       expect(configuration.instance_identifier).to eq('a_name')
     end
-
-    it 'sets a local state folder' do
-      expect(configuration.terraform_backend['statefile_folder']).to_not be_empty
-    end
-
-    it 'sets the expected local state folder' do
-      expect(configuration.terraform_backend['statefile_folder']).to match /\/state\/a_name$/
-    end
   end
 
   describe 'with a single set of configuration' do
@@ -195,34 +187,6 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     it 'builds the instance id from the stack name and group' do
       expect(configuration.instance_identifier).to eq('a_name-a_group')
     end
-  end
-
-  describe 'with terraform backend configured' do
-    let(:terraform_config) {
-      {
-        'terraform_backend' => { 'bucket' => 'the_bucket' }
-      }
-    }
-    let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(
-        configuration_values: terraform_config,
-        stack_definition: stack_definition,
-        base_folder: base_folder
-      )
-    }
-
-    it 'does not set a local state folder' do
-      expect(configuration.terraform_backend['statefile_folder']).to be_nil
-    end
-
-    it 'sets the bucket' do
-      expect(configuration.terraform_backend['bucket']).to eq('the_bucket')
-    end
-
-    it 'sets the key' do
-      expect(configuration.terraform_backend['key']).to eq('a_name.tfstate')
-    end
-
   end
 
   describe 'loaded from files' do
