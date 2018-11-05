@@ -140,6 +140,18 @@ module Cloudspin
         "cd #{working_folder} && #{built_command.to_s}"
       end
 
+      def refresh
+        RubyTerraform.clean(directory: working_folder)
+        mkdir_p File.dirname(working_folder)
+        cp_r @stack_definition.source_path, working_folder
+        ensure_state_folder
+        Dir.chdir(working_folder) do
+          terraform_init
+          RubyTerraform.refresh(terraform_command_parameters(force: true))
+        end
+      end
+
+
       def terraform_init
         RubyTerraform.init(terraform_init_params)
       end

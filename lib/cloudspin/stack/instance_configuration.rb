@@ -45,6 +45,7 @@ module Cloudspin
       )
         configuration_values = {}
         configuration_files.flatten.each { |config_file|
+        puts "Reading configuration file: #{config_file}"
           configuration_values = configuration_values.deep_merge(yaml_file_to_hash(config_file))
         }
         self.new(
