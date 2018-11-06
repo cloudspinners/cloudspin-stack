@@ -1,11 +1,12 @@
 sudo: false
 language: ruby
 rvm:
-  - 2.4.3
+  - 2.5.1
 before_install:
-  - gem install bundler -v 1.17.1
   - curl -sLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.10/terraform_0.11.10_linux_amd64.zip
   - unzip /tmp/terraform.zip -d /tmp
-  - mkdir ~/bin
+  - mkdir -p ~/bin
   - mv /tmp/terraform ~/bin
+  - chmod 0755 ~/bin/terraform
   - export PATH="~/bin:$PATH"
+  - gem install bundler -v 1.17.1
