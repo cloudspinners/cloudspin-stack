@@ -27,14 +27,14 @@ module Cloudspin
       def self.from_folder(
             *instance_configuration_files,
             stack_name: nil,
-            definition_folder:,
+            definition_location:,
             base_folder: '.',
             base_working_folder:
       )
         self.from_files(
             instance_configuration_files,
             stack_name: stack_name,
-            stack_definition: Definition.from_folder(definition_folder),
+            stack_definition: Definition.from_location(definition_location),
             base_folder: base_folder,
             base_working_folder: base_working_folder
           )

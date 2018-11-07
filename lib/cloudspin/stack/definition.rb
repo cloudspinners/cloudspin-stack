@@ -15,7 +15,7 @@ module Cloudspin
       end
 
       def self.from_file(specfile)
-        raise NoStackDefinitionConfigurationFileError, specfile unless File.exists?(specfile)
+        raise NoStackDefinitionConfigurationFileError, "Did not find file '#{specfile}'" unless File.exists?(specfile)
         source_path = File.dirname(specfile)
         spec_hash = YAML.load_file(specfile)
         self.new(
@@ -25,12 +25,17 @@ module Cloudspin
         )
       end
 
-      def self.from_folder(definition_folder)
-        from_file("#{definition_folder}/stack-definition.yaml")
+      def self.from_location(definition_location, definition_cache_folder: '.cloudspin/definitions')
+        if RemoteDefinition.is_remote?(definition_location)
+          # puts "INFO: Downloading remote stack definition"
+          from_file(RemoteDefinition.new(definition_location).fetch(definition_cache_folder))
+        else
+          # puts "INFO: Using local stack definition source"
+          from_file(definition_location)
+        end
       end
 
     end
-
 
     class NoStackDefinitionConfigurationFileError < StandardError; end
 

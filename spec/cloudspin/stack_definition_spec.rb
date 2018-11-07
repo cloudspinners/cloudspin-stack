@@ -1,4 +1,6 @@
 require 'tempfile'
+require 'webmock/rspec'
+require 'zip'
 
 RSpec.describe 'Stack::Definition' do
 
@@ -26,7 +28,7 @@ RSpec.describe 'Stack::Definition' do
 
   describe 'defined from yaml spec file' do
     let(:yaml_file) {
-      tmp = Tempfile.new('stack_definition_spec.yaml')
+      tmp = Tempfile.new('stack-definition.yaml')
       tmp.write(<<~YAML_FILE
         ---
         stack:
@@ -53,7 +55,71 @@ RSpec.describe 'Stack::Definition' do
     it 'has the version defined in the yaml file' do
       expect(stack_definition.version).to eq('0.0.0-y')
     end
-
   end
+
+  describe 'given an invalid location' do
+    let(:stack_definition) {
+      Cloudspin::Stack::Definition.from_location('ftp://foo')
+    }
+    it 'raises the relevant error' do
+      expect { stack_definition }.to raise_error(Cloudspin::Stack::NoStackDefinitionConfigurationFileError)
+    end
+  end
+
+  describe 'given a non-existent file' do
+    let(:stack_definition) {
+      Cloudspin::Stack::Definition.from_location('/xxx_foo')
+    }
+    it 'raises the relevant error' do
+      expect { stack_definition }.to raise_error(Cloudspin::Stack::NoStackDefinitionConfigurationFileError)
+    end
+  end
+
+  describe 'defined from local folder' do
+    let(:yaml_file) {
+      tmp = Tempfile.new('stack-definition.yaml')
+      tmp.write(<<~YAML_FILE
+        ---
+        stack:
+          name: yaml_name
+          version: 0.0.0-y
+        YAML_FILE
+      )
+      tmp.close
+      tmp.path
+    }
+    let(:stack_definition) {
+      Cloudspin::Stack::Definition.from_location(yaml_file)
+    }
+
+    it 'has assumed the terraform path from the yaml file location' do
+      expect(stack_definition.source_path).to eq(File.dirname(yaml_file))
+    end
+  end
+
+  describe 'downloaded from an http URL' do
+    let(:dummy_zipfile) { dummy_definition_artefact }
+    let(:local_definitions_folder) { Dir.mktmpdir('temp_local_definitions') }
+    let(:stack_definition) {
+      Cloudspin::Stack::Definition.from_location(
+        'http://cloudspin.io/dummies/archive.zip',
+        definition_cache_folder: local_definitions_folder
+      )
+    }
+
+    # before(:each) {stub}
+
+    it 'ends up in the expected local folder' do
+      stub_request(:any, /cloudspin.io/).to_return(body: File.new(dummy_zipfile), status: 200)
+      expect(stack_definition.source_path).to eq(local_definitions_folder + '/.')
+    end
+
+    it 'has a definition spec' do
+      stub_request(:any, /cloudspin.io/).to_return(body: File.new(dummy_zipfile), status: 200)
+      stack_definition
+      expect(File.exists?(local_definitions_folder + '/stack-definition.yaml')).to be(true)
+    end
+  end
+
 end
 

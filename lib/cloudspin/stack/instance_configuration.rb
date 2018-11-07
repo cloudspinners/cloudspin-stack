@@ -24,7 +24,6 @@ module Cloudspin
         @stack_definition = stack_definition
         @stack_name = stack_name || stack_definition.name
         @base_folder = base_folder
-
         @instance_values = configuration_values['instance'] || {}
         @parameter_values = configuration_values['parameters'] || {}
         @resource_values = configuration_values['resources'] || {}
@@ -45,7 +44,7 @@ module Cloudspin
       )
         configuration_values = {}
         configuration_files.flatten.each { |config_file|
-          puts "Reading configuration file: #{config_file}"
+          # puts "DEBUG: Reading configuration file: #{config_file}"
           configuration_values = configuration_values.deep_merge(yaml_file_to_hash(config_file))
         }
         self.new(
