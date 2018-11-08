@@ -68,7 +68,7 @@ module Cloudspin
           }
         }
         raise MissingStackDefinitionConfigurationFileError unless File.exists? "#{where_to_put_it}/#{folder_name}/stack-definition.yaml"
-        "#{where_to_put_it}/#{folder_name}/stack-definition.yaml"
+        "#{where_to_put_it}/#{folder_name}"
       end
 
       def clear_folder(folder_to_clear)

@@ -77,19 +77,18 @@ RSpec.describe 'Stack::Definition' do
 
   describe 'defined from local folder' do
     let(:yaml_file) {
-      tmp = Tempfile.new('stack-definition.yaml')
-      tmp.write(<<~YAML_FILE
+      dummy_definition_specfile(
+        <<~YAML_FILE
         ---
         stack:
           name: yaml_name
           version: 0.0.0-y
         YAML_FILE
       )
-      tmp.close
-      tmp.path
     }
+
     let(:stack_definition) {
-      Cloudspin::Stack::Definition.from_location(yaml_file)
+      Cloudspin::Stack::Definition.from_location(File.dirname(yaml_file))
     }
 
     it 'has assumed the terraform path from the yaml file location' do

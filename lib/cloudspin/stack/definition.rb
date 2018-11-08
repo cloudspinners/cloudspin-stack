@@ -28,12 +28,14 @@ module Cloudspin
       end
 
       def self.from_location(definition_location, definition_cache_folder: '.cloudspin/definitions')
+        # puts "DEBUG: get definition from location #{definition_location}"
         if RemoteDefinition.is_remote?(definition_location)
-          # puts "INFO: Downloading remote stack definition"
-          from_file(RemoteDefinition.new(definition_location).fetch(definition_cache_folder), from_remote: true)
+          # puts "DEBUG: Downloading remote stack definition"
+          local_definition_folder = RemoteDefinition.new(definition_location).fetch(definition_cache_folder)
+          from_file("#{local_definition_folder}/stack-definition.yaml", from_remote: true)
         else
-          # puts "INFO: Using local stack definition source"
-          from_file(definition_location)
+          # puts "DEBUG: Using local stack definition source: #{definition_location}/stack-definition.yaml"
+          from_file("#{definition_location}/stack-definition.yaml")
         end
       end
 

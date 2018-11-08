@@ -70,9 +70,10 @@ module Cloudspin
     no_commands do
 
       def instance
-        Cloudspin::Stack::Instance.from_files(
+        Cloudspin::Stack::Instance.from_folder(
           instance_configuration_files,
-          stack_definition: stack_definition,
+          definition_location: './src',
+          base_folder: '.',
           base_working_folder: './work'
         )
       end
