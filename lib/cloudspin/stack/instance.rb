@@ -53,6 +53,11 @@ module Cloudspin
           stack_definition: stack_definition,
           base_folder: base_folder
         )
+
+        if instance_configuration.has_remote_state_configuration? && stack_definition.is_from_remote?
+          add_terraform_backend_source(stack_definition.source_path)
+        end
+
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
@@ -64,6 +69,18 @@ module Cloudspin
       def self.ensure_folder(folder)
         FileUtils.mkdir_p folder
         Pathname.new(folder).realdirpath.to_s
+      end
+
+      def self.add_terraform_backend_source(terraform_source_folder)
+        puts "DEBUG: Creating file #{terraform_source_folder}/_cloudspin_created_backend.tf"
+        File.open("#{terraform_source_folder}/_cloudspin_created_backend.tf", 'w') { |backend_file|
+          backend_file.write(<<~TF_BACKEND_SOURCE
+            terraform {
+              backend "s3" {}
+            }
+          TF_BACKEND_SOURCE
+          )
+        }
       end
 
       def validate_id(raw_id)
