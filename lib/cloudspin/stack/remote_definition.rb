@@ -23,15 +23,36 @@ module Cloudspin
         download_file(artefact_url, zipfile)
       end
 
-      def download_file(remote_file, local_file)
+      def download_file(remote_file, local_file, tries = 0)
+        raise "Too many redirects (#{remote_file})" if tries > 9
         remote_file_uri = URI(remote_file)
-        Net::HTTP.start(remote_file_uri.host, remote_file_uri.port) do |remote|
-          response = remote.get(remote_file_uri)
-          open(local_file, 'wb') do |local|
-            local.write(response.body)
+
+        Net::HTTP.start(
+          remote_file_uri.host,
+          remote_file_uri.port,
+          :use_ssl => remote_file_uri.scheme == 'https'
+        ) do |http|
+          request = Net::HTTP::Get.new(remote_file_uri)
+          http.request(request) do |response|
+            case response
+              when Net::HTTPSuccess     then write_local_file(response, local_file)
+              when Net::HTTPRedirection then download_file(response['Location'], local_file, tries + 1)
+              else
+                raise "Request to '#{remote_file_uri}' failed: #{response.error} #{response.inspect}"
+              end
           end
         end
+
+        # puts "DEBUG: Downloaded file to #{local_file}"
         local_file
+      end
+
+      def write_local_file(response, local_file)
+        open(local_file, 'wb') do |io|
+          response.read_body do |chunk|
+            io.write chunk
+          end
+        end
       end
 
       def unpack(zipfile, where_to_put_it)
@@ -40,7 +61,6 @@ module Cloudspin
         clear_folder(where_to_put_it)
         Zip::File.open(zipfile) { |zip_file|
           zip_file.each { |f|
-            # puts "-> #{f.name}"
             f_path = File.join(where_to_put_it, f.name)
             FileUtils.mkdir_p(File.dirname(f_path))
             # puts "DEBUG: Extracting #{f} to #{f_path}"
@@ -61,13 +81,15 @@ module Cloudspin
 
       def path_of_configuration_file_in(zipfile_path)
         zipfile = Zip::File.open(zipfile_path)
-        begin
+        list_of_files = begin
           zipfile.entries.select { |entry|
-            /^stack-definition.yaml$/.match entry.name
-          }.first.name
+            /^stack-definition.yaml$/.match entry.name or /[\.\/]stack-definition.yaml$/.match entry.name
+          }
         ensure
           zipfile.close
         end
+        raise MissingStackDefinitionConfigurationFileError, "No configuration file in #{zipfile_path}" if list_of_files.empty?
+        list_of_files.first.name
       end
 
     end
