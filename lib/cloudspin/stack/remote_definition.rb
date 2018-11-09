@@ -35,11 +35,11 @@ module Cloudspin
           request = Net::HTTP::Get.new(remote_file_uri)
           http.request(request) do |response|
             case response
-              when Net::HTTPSuccess     then write_local_file(response, local_file)
-              when Net::HTTPRedirection then download_file(response['Location'], local_file, tries + 1)
-              else
-                raise "Request to '#{remote_file_uri}' failed: #{response.error} #{response.inspect}"
-              end
+            when Net::HTTPSuccess     then write_local_file(response, local_file)
+            when Net::HTTPRedirection then download_file(response['Location'], local_file, tries + 1)
+            else
+              raise "Request to '#{remote_file_uri}' failed: #{response.error} #{response.inspect}"
+            end
           end
         end
 

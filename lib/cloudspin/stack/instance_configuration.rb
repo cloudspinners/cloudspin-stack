@@ -6,27 +6,38 @@ module Cloudspin
     class InstanceConfiguration
 
       attr_reader :stack_definition
-      attr_reader :stack_name
       attr_reader :base_folder
 
       attr_reader :instance_values
       attr_reader :parameter_values
       attr_reader :resource_values
+      attr_reader :stack_values
 
+      attr_reader :stack_name
+      attr_reader :instance_identifier
       attr_reader :terraform_backend
 
       def initialize(
           configuration_values: {},
-          stack_name: nil,
           stack_definition:,
           base_folder: '.'
       )
         @stack_definition = stack_definition
-        @stack_name = stack_name || stack_definition.name
         @base_folder = base_folder
+
+        @stack_values = configuration_values['stack'] || {}
         @instance_values = configuration_values['instance'] || {}
         @parameter_values = configuration_values['parameters'] || {}
         @resource_values = configuration_values['resources'] || {}
+
+        @stack_name = @stack_values['name'] || stack_definition.name
+        @instance_identifier = if @instance_values['identifier']
+          instance_values['identifier']
+        elsif @instance_values['group']
+          stack_name + '-' + @instance_values['group']
+        else
+          stack_name
+        end
 
         @terraform_backend = configuration_values['terraform_backend'] || {}
         if @terraform_backend.empty?
@@ -38,7 +49,6 @@ module Cloudspin
 
       def self.from_files(
           *configuration_files,
-          stack_name: nil,
           stack_definition:,
           base_folder: '.'
       )
@@ -49,7 +59,6 @@ module Cloudspin
         }
         self.new(
           stack_definition: stack_definition,
-          stack_name: stack_name,
           base_folder: base_folder,
           configuration_values: configuration_values
         )
@@ -85,15 +94,15 @@ module Cloudspin
         "#{instance_identifier}.tfstate"
       end
 
-      def instance_identifier
-        if instance_values['identifier']
-          instance_values['identifier']
-        elsif instance_values['group']
-          stack_name + '-' + instance_values['group']
-        else
-          stack_name
-        end
-      end
+      # def instance_identifier
+      #   if instance_values['identifier']
+      #     instance_values['identifier']
+      #   elsif instance_values['group']
+      #     stack_name + '-' + instance_values['group']
+      #   else
+      #     stack_name
+      #   end
+      # end
 
       def to_s
         {

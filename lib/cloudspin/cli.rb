@@ -14,9 +14,9 @@ module Cloudspin
 
     class_option :source,
       :aliases => '-s',
-      :banner => 'PATH',
+      :banner => 'PATH-OR-URL',
       :default => './src',
-      :desc => 'Folder with the terraform project source files'
+      :desc => 'Path to terraform project source files'
 
     class_option :environment,
       :aliases => '-e',
@@ -72,14 +72,10 @@ module Cloudspin
       def instance
         Cloudspin::Stack::Instance.from_folder(
           instance_configuration_files,
-          definition_location: './src',
+          definition_location: options[:source],
           base_folder: '.',
           base_working_folder: './work'
         )
-      end
-
-      def stack_definition
-        Cloudspin::Stack::Definition.from_file(options[:source] + '/stack-definition.yaml')
       end
 
       def instance_configuration_files

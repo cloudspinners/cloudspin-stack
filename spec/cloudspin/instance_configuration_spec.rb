@@ -28,12 +28,20 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     it 'uses the definition name as the instance_identifier' do
       expect(configuration.instance_identifier).to eq('a_name')
     end
+
+    it 'has the expected stack name' do
+      expect(configuration.stack_name).to eq('a_name')
+    end
+
+    it 'has the expected instance_identifier' do
+      expect(configuration.instance_identifier).to eq('a_name')
+    end
   end
 
-  describe 'with a single set of configuration' do
+  describe 'when instance configuration values are set' do
     let(:instance_configuration_values) {
       {
-        'instance' => { 'option' => 'value_x', 'group' => 'some_other_group' },
+        'instance' => { 'option' => 'value_x', 'group' => 'some_group' },
         'parameters' => { 'option' => 'value_y' },
         'resources' => { 'option' => 'value_z' }
       }
@@ -51,90 +59,45 @@ RSpec.describe 'Stack::InstanceConfiguration' do
       expect(configuration.resource_values['option']).to eq('value_z')
     end
 
+    it 'has the expected stack name' do
+      expect(configuration.stack_name).to eq('a_name')
+    end
+
     it 'has the expected instance_identifier' do
-      expect(configuration.instance_identifier).to eq('a_name-some_other_group')
+      expect(configuration.instance_identifier).to eq('a_name-some_group')
     end
   end
 
-  describe 'with stack_name overridden' do
-    let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(
-        stack_name: 'my_special_stack_name',
-        stack_definition: stack_definition,
-        base_folder: base_folder
-      )
-    }
-
-    it 'uses the overridden name as the instance_identifier' do
-      expect(configuration.instance_identifier).to eq('my_special_stack_name')
-    end
-  end
-
-  describe 'with stack_name overridden and group set' do
+  describe 'with stack name overridden in the instance configuration' do
     let(:instance_configuration_values) {
       {
-        'instance' => { 'group' => 'something_different' }
+        'stack' => { 'name' => 'new_stack_name' }
       }
     }
 
-    let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(
-        configuration_values: instance_configuration_values,
-        stack_name: 'another_stack_name',
-        stack_definition: stack_definition,
-        base_folder: base_folder
-      )
-    }
+    it 'has the expected stack name' do
+      expect(configuration.stack_name).to eq('new_stack_name')
+    end
 
-    it 'uses the overridden name as the instance_identifier' do
-      expect(configuration.instance_identifier).to eq('another_stack_name-something_different')
+    it 'has the expected instance_identifier' do
+      expect(configuration.instance_identifier).to eq('new_stack_name')
     end
   end
 
-  describe 'with overridden values' do
-    let(:first_config) {
+  describe 'with stack name overridden in the instance configuration and group set' do
+    let(:instance_configuration_values) {
       {
-        'instance' => { 'option' => 'first_set' },
-        'parameters' => { 'option' => 'first_set' }
+        'instance' => { 'group' => 'some_group' },
+        'stack' => { 'name' => 'new_stack_name' }
       }
     }
-    let(:second_config) {
-      {
-        'parameters' => { 'option' => 'second_set' },
-        'resources' => { 'option' => 'second_set' }
-      }
-    }
-    let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.new(
-        configuration_values: first_config.merge(second_config),
-        stack_definition: stack_definition,
-        base_folder: base_folder
-      )
-    }
 
-    it 'the first value is used if it\'s the only one' do
-      expect(configuration.instance_values['option']).to eq('first_set')
+    it 'has the expected stack name' do
+      expect(configuration.stack_name).to eq('new_stack_name')
     end
 
-    it 'the second value is used if it\'s the only one' do
-      expect(configuration.resource_values['option']).to eq('second_set')
-    end
-
-    it 'the second value overrides the first if both are set' do
-      expect(configuration.parameter_values['option']).to eq('second_set')
-    end
-  end
-
-  describe 'with stack name set in the stack definition' do
-    let(:stack_definition) {
-      Cloudspin::Stack::Definition.new(
-        source_path: '/some/path',
-        stack_name: 'a_name'
-      )
-    }
-
-    it 'is set in the instance configuration' do
-      expect(configuration.stack_name).to eq('a_name')
+    it 'has the expected instance_identifier' do
+      expect(configuration.instance_identifier).to eq('new_stack_name-some_group')
     end
   end
 
