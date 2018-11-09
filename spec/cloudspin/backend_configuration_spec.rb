@@ -24,7 +24,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
   let(:instance_configuration_values) {{}} 
 
-  describe 'with no configuration' do
+  describe 'with no instance configuration' do
     it 'sets a local state folder' do
       expect(configuration.terraform_backend['statefile_folder']).to_not be_empty
     end

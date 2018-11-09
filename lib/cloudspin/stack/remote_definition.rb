@@ -72,7 +72,7 @@ module Cloudspin
       end
 
       def clear_folder(folder_to_clear)
-        FileUtils.remove_entry_secure(folder_to_clear)
+        FileUtils.remove_entry_secure(folder_to_clear) if File.exists?(folder_to_clear)
       end
 
       def path_of_source_in(zipfile_path)

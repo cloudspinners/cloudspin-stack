@@ -9,7 +9,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
   let(:stack_definition) { 
     Cloudspin::Stack::Definition.new(
-      source_path: '/some/path',
+      source_path: '/definition/path/src',
       stack_name: 'a_name'
     )
   }
@@ -35,6 +35,10 @@ RSpec.describe 'Stack::InstanceConfiguration' do
 
     it 'has the expected instance_identifier' do
       expect(configuration.instance_identifier).to eq('a_name')
+    end
+
+    it 'looks for the definition source locally' do
+      expect(configuration.stack_definition.source_path).to eq('/definition/path/src')
     end
   end
 
@@ -104,7 +108,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   describe 'with the instance identifier explicitly set' do
     let(:stack_definition) {
       Cloudspin::Stack::Definition.new(
-        source_path: '/some/path',
+        source_path: '/definition/path/src',
         stack_name: 'a_name'
       )
     }
@@ -123,7 +127,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   describe 'without overriding the identifier' do
     let(:stack_definition) {
       Cloudspin::Stack::Definition.new(
-        source_path: '/some/path',
+        source_path: '/definition/path/src',
         stack_name: 'a_name'
       )
     }
@@ -138,7 +142,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   describe 'with instance:group set' do
     let(:stack_definition) {
       Cloudspin::Stack::Definition.new(
-        source_path: '/some/path',
+        source_path: '/definition/path/src',
         stack_name: 'a_name'
       )
     }
@@ -152,50 +156,10 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     end
   end
 
-  describe 'loaded from files' do
-    let(:first_file) {
-      tmp = Tempfile.new('first_instance_config.yaml')
-      tmp.write(<<~FIRST_YAML_FILE
-        ---
-        instance:
-          option: first_set
-        parameters:
-          option: first_set
-        FIRST_YAML_FILE
-      )
-      tmp.close
-      tmp.path
+  describe 'with stack:definition_location set' do
+    let(:instance_configuration_values) {
+      { 'stack' => { 'definition_location' => 'https://localhost/filename.zip' } }
     }
-
-    let(:second_file) {
-      tmp = Tempfile.new('second_instance_config.yaml')
-      tmp.write(<<~SECOND_YAML_FILE
-        ---
-        parameters:
-          option: second_set
-        resources:
-          option: second_set
-        SECOND_YAML_FILE
-      )
-      tmp.close
-      tmp.path
-    }
-
-    let(:configuration) {
-      Cloudspin::Stack::InstanceConfiguration.from_files(first_file, second_file, stack_definition: stack_definition, base_folder: base_folder)
-    }
-
-    it 'uses the value from the first file if it\'s only set there' do
-      expect(configuration.instance_values['option']).to eq('first_set')
-    end
-
-    it 'uses the value from the second file if it\'s only set there' do
-      expect(configuration.resource_values['option']).to eq('second_set')
-    end
-
-    it 'uses values from the second file if it\'s found in both files' do
-      expect(configuration.parameter_values['option']).to eq('second_set')
-    end
-
   end
+
 end

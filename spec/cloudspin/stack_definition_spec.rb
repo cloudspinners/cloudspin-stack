@@ -1,6 +1,4 @@
-require 'tempfile'
 require 'webmock/rspec'
-require 'zip'
 
 RSpec.describe 'Stack::Definition' do
 

@@ -32,7 +32,10 @@ module Cloudspin
       )
         self.from_files(
             instance_configuration_files,
-            stack_definition: Definition.from_location(definition_location),
+            stack_definition: Definition.from_location(
+                definition_location,
+                definition_cache_folder: "#{base_folder}/.cloudspin/definitions"
+            ),
             base_folder: base_folder,
             base_working_folder: base_working_folder
           )

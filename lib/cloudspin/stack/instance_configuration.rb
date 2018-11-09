@@ -52,16 +52,21 @@ module Cloudspin
           stack_definition:,
           base_folder: '.'
       )
-        configuration_values = {}
-        configuration_files.flatten.each { |config_file|
-          # puts "DEBUG: Reading configuration file: #{config_file}"
-          configuration_values = configuration_values.deep_merge(yaml_file_to_hash(config_file))
-        }
+        configuration_values = load_configuration_values(configuration_files)
         self.new(
           stack_definition: stack_definition,
           base_folder: base_folder,
           configuration_values: configuration_values
         )
+      end
+
+      def self.load_configuration_values(configuration_files)
+        configuration_values = {}
+        configuration_files.flatten.each { |config_file|
+          # puts "DEBUG: Reading configuration file: #{config_file}"
+          configuration_values = configuration_values.deep_merge(yaml_file_to_hash(config_file))
+        }
+        configuration_values
       end
 
       def self.yaml_file_to_hash(yaml_file)
@@ -93,16 +98,6 @@ module Cloudspin
       def default_state_key
         "#{instance_identifier}.tfstate"
       end
-
-      # def instance_identifier
-      #   if instance_values['identifier']
-      #     instance_values['identifier']
-      #   elsif instance_values['group']
-      #     stack_name + '-' + instance_values['group']
-      #   else
-      #     stack_name
-      #   end
-      # end
 
       def to_s
         {

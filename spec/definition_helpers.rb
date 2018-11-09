@@ -1,9 +1,13 @@
 module DefinitionHelpers
 
   def dummy_definition_specfile(spec_contents)
-    specfile_path = "#{Dir.mktmpdir}/stack-definition.yaml"
-    IO.write(specfile_path, spec_contents)
-    specfile_path
+    temporary_yaml_file('stack-definition.yaml', spec_contents)
+  end
+
+  def temporary_yaml_file(filename, contents)
+    file_path = "#{Dir.mktmpdir}/#{filename}"
+    IO.write(file_path, contents)
+    file_path
   end
 
   def dummy_definition_artefact
