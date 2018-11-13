@@ -104,15 +104,15 @@ RSpec.describe 'Stack::Definition' do
       )
     }
 
-    # before(:each) {stub}
+    before(:each) {
+      stub_request(:any, /cloudspin.io/).to_return(body: File.new(dummy_zipfile), status: 200)
+    }
 
     it 'ends up in the expected local folder' do
-      stub_request(:any, /cloudspin.io/).to_return(body: File.new(dummy_zipfile), status: 200)
       expect(stack_definition.source_path).to eq(local_definitions_folder + '/.')
     end
 
     it 'has a definition spec' do
-      stub_request(:any, /cloudspin.io/).to_return(body: File.new(dummy_zipfile), status: 200)
       stack_definition
       expect(File.exists?(local_definitions_folder + '/stack-definition.yaml')).to be(true)
     end
