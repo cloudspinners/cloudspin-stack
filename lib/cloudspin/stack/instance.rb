@@ -34,7 +34,8 @@ module Cloudspin
             instance_configuration_files,
             stack_definition: Definition.from_location(
                 definition_location,
-                definition_cache_folder: "#{base_folder}/.cloudspin/definitions"
+                definition_cache_folder: "#{base_folder}/.cloudspin/definitions",
+                stack_configuration: InstanceConfiguration.load_configuration_values(instance_configuration_files)['stack']
             ),
             base_folder: base_folder,
             base_working_folder: base_working_folder
@@ -71,7 +72,7 @@ module Cloudspin
       end
 
       def self.add_terraform_backend_source(terraform_source_folder)
-        puts "DEBUG: Creating file #{terraform_source_folder}/_cloudspin_created_backend.tf"
+        # puts "DEBUG: Creating file #{terraform_source_folder}/_cloudspin_created_backend.tf"
         File.open("#{terraform_source_folder}/_cloudspin_created_backend.tf", 'w') { |backend_file|
           backend_file.write(<<~TF_BACKEND_SOURCE
             terraform {

@@ -15,8 +15,7 @@ module Cloudspin
     class_option :source,
       :aliases => '-s',
       :banner => 'PATH-OR-URL',
-      :default => './src',
-      :desc => 'Path to terraform project source files'
+      :desc => 'Path to terraform project source files. Defaults to ./src'
 
     class_option :environment,
       :aliases => '-e',

@@ -32,22 +32,22 @@ module Cloudspin
           stack_configuration: nil
       )
         resolved_definition_location = if ! definition_location.nil?
-          puts "DEBUG: definition_location has been explicitly set to #{definition_location}"
+          # puts "DEBUG: definition_location has been explicitly set to #{definition_location}"
           definition_location
-        elsif stack_configuration['definition_location']
-          puts "DEBUG: definition_location comes from the stack configuration (#{stack_configuration})"
+        elsif ! stack_configuration.nil? && stack_configuration['definition_location']
+          # puts "DEBUG: definition_location comes from the stack configuration (#{stack_configuration})"
           stack_configuration['definition_location']
         else
-          raise NoStackDefinitionConfigurationFileError, 'No location provided'
+          './src'
         end
 
-        puts "DEBUG: get definition from location #{resolved_definition_location}"
+        # puts "DEBUG: get definition from location #{resolved_definition_location}"
         if RemoteDefinition.is_remote?(resolved_definition_location)
-          puts "DEBUG: Downloading remote stack definition"
+          # puts "DEBUG: Downloading remote stack definition"
           local_definition_folder = RemoteDefinition.new(resolved_definition_location).fetch(definition_cache_folder)
           from_file("#{local_definition_folder}/stack-definition.yaml", from_remote: true)
         else
-          puts "DEBUG: Using local stack definition source: #{resolved_definition_location}/stack-definition.yaml"
+          # puts "DEBUG: Using local stack definition source: #{resolved_definition_location}/stack-definition.yaml"
           from_file("#{resolved_definition_location}/stack-definition.yaml")
         end
       end
