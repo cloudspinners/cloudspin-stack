@@ -40,6 +40,7 @@ module Cloudspin
         end
 
         @terraform_backend = configuration_values['terraform_backend'] || {}
+        # puts "DEBUG: Terraform backend: #{@terraform_backend}"
         if @terraform_backend.empty?
           @terraform_backend['statefile_folder'] = default_state_folder
         else

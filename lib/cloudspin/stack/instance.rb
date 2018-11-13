@@ -55,7 +55,10 @@ module Cloudspin
         )
 
         if instance_configuration.has_remote_state_configuration? && stack_definition.is_from_remote?
+          # puts "DEBUG: Stack instance is configured to use remote terraform state AND remote stack definition code"
           add_terraform_backend_source(stack_definition.source_path)
+        # else
+        #   puts "DEBUG: Stack instances is configured to use local terraform state AND/OR local stack definition code"
         end
 
         self.new(
