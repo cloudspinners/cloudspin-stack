@@ -15,13 +15,17 @@ module Cloudspin
 
       attr_reader :stack_name
       attr_reader :instance_identifier
-      attr_reader :terraform_backend
+      attr_reader :backend_configuration
+
+
+      attr_reader :Xterraform_backend
 
       def initialize(
           configuration_values: {},
           stack_definition:,
           base_folder: '.'
       )
+        # puts "DEBUG: InstanceConfiguration configuration_values: #{configuration_values}"
         @stack_definition = stack_definition
         @base_folder = base_folder
 
@@ -29,22 +33,23 @@ module Cloudspin
         @instance_values = configuration_values['instance'] || {}
         @parameter_values = configuration_values['parameters'] || {}
         @resource_values = configuration_values['resources'] || {}
-
         @stack_name = @stack_values['name'] || stack_definition.name
-        @instance_identifier = if @instance_values['identifier']
-          instance_values['identifier']
-        elsif @instance_values['group']
-          stack_name + '-' + @instance_values['group']
-        else
-          stack_name
-        end
+        init_instance_identifier
+        @backend_configuration = BackendConfiguration.new(
+          terraform_backend_configuration_values: configuration_values['terraform_backend'] || {},
+          instance_identifier: instance_identifier,
+          stack_name: stack_name,
+          base_folder: base_folder
+        )
+      end
 
-        @terraform_backend = configuration_values['terraform_backend'] || {}
-        # puts "DEBUG: Terraform backend: #{@terraform_backend}"
-        if @terraform_backend.empty?
-          @terraform_backend['statefile_folder'] = default_state_folder
+      def init_instance_identifier
+        @instance_identifier = if @instance_values['identifier']
+          @instance_values['identifier']
+        elsif @instance_values['group']
+          @stack_name + '-' + @instance_values['group']
         else
-          @terraform_backend['key'] = default_state_key
+          @stack_name
         end
       end
 
@@ -74,30 +79,17 @@ module Cloudspin
         if File.exists?(yaml_file)
           YAML.load_file(yaml_file) || {}
         else
-          puts "No configuration file: #{yaml_file}"
+          puts "WARNING: No configuration file: #{yaml_file}"
           {}
         end
       end
 
       def has_local_state_configuration?
-        ! @terraform_backend['statefile_folder'].nil?
-      end
-
-      def local_statefile
-        "#{@terraform_backend['statefile_folder']}/#{instance_identifier}.tfstate"
+        ! @backend_configuration.remote_state?
       end
 
       def has_remote_state_configuration?
-        ! @terraform_backend['key'].nil?
-      end
-
-      def default_state_folder
-        FileUtils.mkdir_p "#{base_folder}/state"
-        Pathname.new("#{base_folder}/state/#{instance_identifier}").realdirpath.to_s
-      end
-
-      def default_state_key
-        "#{instance_identifier}.tfstate"
+        @backend_configuration.remote_state?
       end
 
       def to_s
@@ -106,7 +98,7 @@ module Cloudspin
           'instance' => instance_values,
           'parameters' => parameter_values,
           'resources' => resource_values,
-          'terraform_backend' => terraform_backend
+          'backend_configuration' => backend_configuration
         }.to_s
       end
 

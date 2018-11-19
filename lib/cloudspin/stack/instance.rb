@@ -56,9 +56,9 @@ module Cloudspin
 
         if instance_configuration.has_remote_state_configuration? && stack_definition.is_from_remote?
           # puts "DEBUG: Stack instance is configured to use remote terraform state AND remote stack definition code"
-          add_terraform_backend_source(stack_definition.source_path)
+          add_backend_configuration_source(stack_definition.source_path)
         # else
-        #   puts "DEBUG: Stack instances is configured to use local terraform state AND/OR local stack definition code"
+        #   puts "DEBUG: Stack instance is configured to use local terraform state AND/OR local stack definition code"
         end
 
         self.new(
@@ -74,7 +74,7 @@ module Cloudspin
         Pathname.new(folder).realdirpath.to_s
       end
 
-      def self.add_terraform_backend_source(terraform_source_folder)
+      def self.add_backend_configuration_source(terraform_source_folder)
         # puts "DEBUG: Creating file #{terraform_source_folder}/_cloudspin_created_backend.tf"
         File.open("#{terraform_source_folder}/_cloudspin_created_backend.tf", 'w') { |backend_file|
           backend_file.write(<<~TF_BACKEND_SOURCE
@@ -99,6 +99,18 @@ module Cloudspin
       def resource_values
         configuration.resource_values
       end
+
+      # def migrate
+      #   RubyTerraform.clean(directory: working_folder)
+      #   mkdir_p File.dirname(working_folder)
+      #   cp_r @stack_definition.source_path, working_folder
+      #   Dir.chdir(working_folder) do
+      #   # cp configuration.backend_configuration.local_state_folder
+      #     terraform_init
+      #     # terraform_state_push()
+      #     RubyTerraform.plan(terraform_command_parameters)
+      #   end
+      # end
 
       def plan(plan_destroy: false)
         RubyTerraform.clean(directory: working_folder)
@@ -171,12 +183,22 @@ module Cloudspin
         end
       end
 
-
       def terraform_init
+        if configuration.backend_configuration.migrate_state?
+          prepare_state_for_migration
+        end
         RubyTerraform.init(terraform_init_params)
       end
 
+      def prepare_state_for_migration
+        # puts "DEBUG: Preparing to migrate state from #{configuration.backend_configuration.local_statefile}"
+        cp configuration.backend_configuration.local_statefile, "#{working_folder}/terraform.tfstate"
+      end
+
       def init_dry
+        if configuration.backend_configuration.migrate_state?
+          "cp #{configuration.backend_configuration.local_statefile} -> #{working_folder}/terraform.tfstate"
+        end
         init_command = RubyTerraform::Commands::Init.new
         command_line_builder = init_command.instantiate_builder
         configured_command = init_command.configure_command(
@@ -188,48 +210,27 @@ module Cloudspin
       end
 
       def terraform_init_params
-        if configuration.has_remote_state_configuration?
-          {
-            backend: 'true',
-            backend_config: backend_parameters
-          }
-        else
-          {}
-        end
+        configuration.backend_configuration.terraform_init_parameters
       end
 
+      # TODO: Redundant? The folder is created in the BackendConfiguration class ...
       def ensure_state_folder
         if configuration.has_local_state_configuration?
-          Instance.ensure_folder(configuration.terraform_backend['statefile_folder'])
+          Instance.ensure_folder(configuration.backend_configuration.local_state_folder)
         end
       end
 
       def terraform_command_parameters(added_parameters = {})
         {
           vars: terraform_variables
-        }.merge(local_state_parameters).merge(added_parameters)
+        }.merge(configuration.backend_configuration.terraform_command_parameters)
+          .merge(added_parameters)
       end
 
       def terraform_variables
         parameter_values.merge(resource_values) { |key, oldval, newval|
           raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
         }.merge({ 'instance_identifier' => id })
-      end
-
-      def local_state_parameters
-        if configuration.has_local_state_configuration?
-          { state: configuration.local_statefile }
-        else
-          {}
-        end
-      end
-
-      def backend_parameters
-        if configuration.has_remote_state_configuration?
-          configuration.terraform_backend
-        else
-          {}
-        end
       end
 
     end

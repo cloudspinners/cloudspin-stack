@@ -40,6 +40,10 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     it 'looks for the definition source locally' do
       expect(configuration.stack_definition.source_path).to eq('/definition/path/src')
     end
+
+    it 'uses local state' do
+      expect(configuration.backend_configuration.remote_state?).to be false
+    end
   end
 
   describe 'when instance configuration values are set' do
