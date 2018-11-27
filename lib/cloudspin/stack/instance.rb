@@ -1,4 +1,3 @@
-require 'ruby_terraform'
 require 'fileutils'
 
 module Cloudspin
@@ -7,9 +6,7 @@ module Cloudspin
 
       include FileUtils
 
-      attr_reader :id,
-          :working_folder,
-          :configuration
+      attr_reader :id, :configuration, :working_folder, :terraform_command_arguments
 
       def initialize(
             id:,
@@ -22,6 +19,7 @@ module Cloudspin
         @stack_definition = stack_definition
         @working_folder   = working_folder
         @configuration    = configuration
+        @terraform_command_arguments = {}
       end
 
       def self.from_folder(
@@ -100,6 +98,17 @@ module Cloudspin
         configuration.resource_values
       end
 
+      def prepare_working_copy
+        clean_tf_folder(working_folder)
+        mkdir_p File.dirname(working_folder)
+        cp_r @stack_definition.source_path, working_folder
+        ensure_state_folder
+      end
+
+      def clean_tf_folder(folder)
+        FileUtils.rm_rf("#{folder}/.terraform")
+      end
+
       # def migrate
       #   RubyTerraform.clean(directory: working_folder)
       #   mkdir_p File.dirname(working_folder)
@@ -112,106 +121,16 @@ module Cloudspin
       #   end
       # end
 
-      def plan(plan_destroy: false)
-        RubyTerraform.clean(directory: working_folder)
-        mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.source_path, working_folder
-        ensure_state_folder
-        Dir.chdir(working_folder) do
-          terraform_init
-          RubyTerraform.plan(terraform_command_parameters(destroy: plan_destroy))
-        end
-      end
+      # def init
+        # if configuration.backend_configuration.migrate_state?
+        #   prepare_state_for_migration
+        # end
+      # end
 
-      def plan_dry(plan_destroy: false)
-        plan_command = RubyTerraform::Commands::Plan.new
-        command_line_builder = plan_command.instantiate_builder
-        configured_command = plan_command.configure_command(
-          command_line_builder,
-          terraform_command_parameters(:destroy => plan_destroy)
-        )
-        built_command = configured_command.build
-        "cd #{working_folder} && #{built_command.to_s}"
-      end
-
-      def up
-        RubyTerraform.clean(directory: working_folder)
-        mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.source_path, working_folder
-        ensure_state_folder
-        Dir.chdir(working_folder) do
-          terraform_init
-          RubyTerraform.apply(terraform_command_parameters(auto_approve: true))
-        end
-      end
-
-      def up_dry
-        up_command = RubyTerraform::Commands::Apply.new
-        command_line_builder = up_command.instantiate_builder
-        configured_command = up_command.configure_command(command_line_builder, terraform_command_parameters)
-        built_command = configured_command.build
-        "cd #{working_folder} && #{built_command.to_s}"
-      end
-
-      def down
-        RubyTerraform.clean(directory: working_folder)
-        mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.source_path, working_folder
-        ensure_state_folder
-        Dir.chdir(working_folder) do
-          terraform_init
-          RubyTerraform.destroy(terraform_command_parameters(force: true))
-        end
-      end
-
-      def down_dry
-        down_command = RubyTerraform::Commands::Destroy.new
-        command_line_builder = down_command.instantiate_builder
-        configured_command = down_command.configure_command(command_line_builder, terraform_command_parameters)
-        built_command = configured_command.build
-        "cd #{working_folder} && #{built_command.to_s}"
-      end
-
-      def refresh
-        RubyTerraform.clean(directory: working_folder)
-        mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.source_path, working_folder
-        ensure_state_folder
-        Dir.chdir(working_folder) do
-          terraform_init
-          RubyTerraform.refresh(terraform_command_parameters(force: true))
-        end
-      end
-
-      def terraform_init
-        if configuration.backend_configuration.migrate_state?
-          prepare_state_for_migration
-        end
-        RubyTerraform.init(terraform_init_params)
-      end
-
-      def prepare_state_for_migration
-        # puts "DEBUG: Preparing to migrate state from #{configuration.backend_configuration.local_statefile}"
-        cp configuration.backend_configuration.local_statefile, "#{working_folder}/terraform.tfstate"
-      end
-
-      def init_dry
-        if configuration.backend_configuration.migrate_state?
-          "cp #{configuration.backend_configuration.local_statefile} -> #{working_folder}/terraform.tfstate"
-        end
-        init_command = RubyTerraform::Commands::Init.new
-        command_line_builder = init_command.instantiate_builder
-        configured_command = init_command.configure_command(
-          command_line_builder,
-          terraform_init_params
-        )
-        built_command = configured_command.build
-        "cd #{working_folder} && #{built_command.to_s}"
-      end
-
-      def terraform_init_params
-        configuration.backend_configuration.terraform_init_parameters
-      end
+      # def prepare_state_for_migration
+      #   # puts "DEBUG: Preparing to migrate state from #{configuration.backend_configuration.local_statefile}"
+      #   cp configuration.backend_configuration.local_statefile, "#{working_folder}/terraform.tfstate"
+      # end
 
       # TODO: Redundant? The folder is created in the BackendConfiguration class ...
       def ensure_state_folder
@@ -220,17 +139,20 @@ module Cloudspin
         end
       end
 
-      def terraform_command_parameters(added_parameters = {})
-        {
-          vars: terraform_variables
-        }.merge(configuration.backend_configuration.terraform_command_parameters)
-          .merge(added_parameters)
-      end
-
       def terraform_variables
         parameter_values.merge(resource_values) { |key, oldval, newval|
           raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
         }.merge({ 'instance_identifier' => id })
+      end
+
+      def terraform_init_arguments
+        # TODO: Unsmell these
+        # (maybe backend_configuration belongs attached directly to this class?)
+        configuration.backend_configuration.terraform_init_parameters
+      end
+
+      def terraform_command_arguments
+        configuration.backend_configuration.terraform_command_parameters
       end
 
     end

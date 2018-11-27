@@ -34,16 +34,16 @@ RSpec.describe 'Stack::Instance' do
   describe 'without an explicit state configuration' do
     let(:configuration_values) {{}}
 
-    it 'includes the -state parameter for plan command' do
-      expect(stack_instance.plan_dry).to match(/-state=/)
+    it 'includes the -state parameter in the terraform arguments' do
+      expect(stack_instance.terraform_command_arguments[:state]).to_not be_nil
     end
 
-    it 'passes the expected path for the local state to the plan command' do
-      expect(stack_instance.plan_dry).to match(/-state=\S+\/state\/my_stack\/my_stack\.tfstate/)
+    it 'knows the expected path for the local terraform state' do
+      expect(stack_instance.terraform_command_arguments[:state]).to match(/\/state\/my_stack\/my_stack\.tfstate/)
     end
 
-    it 'does not pass backend arguments to the init command' do
-      expect(stack_instance.init_dry).to_not match(/\-backend/)
+    it 'will not include the -state argument for the init command' do
+      expect(stack_instance.terraform_init_arguments[:state]).to be_nil
     end
   end
 
@@ -66,20 +66,20 @@ RSpec.describe 'Stack::Instance' do
       expect(instance_configuration.has_remote_state_configuration?).to be true
     end
 
-    it 'passes -backend argument to the init command' do
-      expect(stack_instance.init_dry).to match(/\-backend/)
+    it 'includes the -backend argument for the init command' do
+      expect(stack_instance.terraform_init_arguments[:backend]).to_not be_nil
     end
 
-    it 'passes a -backend-config argument to the init command' do
-      expect(stack_instance.init_dry).to match(/\-backend-config/)
+    it 'includes the -backend-config argument for the init command' do
+      expect(stack_instance.terraform_init_arguments[:backend_config]).to_not be_nil
     end
 
-    it 'does not pass the -state parameter to the plan command' do
-      expect(stack_instance.plan_dry).to_not match(/-state=/)
+    it 'does not include the -state parameter for terraform commands' do
+      expect(stack_instance.terraform_command_arguments[:state]).to be_nil
     end
 
-    it 'does not pass a -backend-config argument to the plan command' do
-      expect(stack_instance.plan_dry).to_not match(/\-backend-config/)
+    it 'does not include the -backend-config parameter for terraform commands other than init' do
+      expect(stack_instance.terraform_command_arguments[:backend_config]).to be_nil
     end
 
   end
@@ -96,8 +96,8 @@ RSpec.describe 'Stack::Instance' do
       }
     }
 
-    it 'passes -backend argument to the init command' do
-      expect(stack_instance.init_dry).to match(/\-backend/)
+    it 'will use the -backend argument for the terraform init command' do
+      expect(stack_instance.terraform_init_arguments[:backend]).to_not be_nil
     end
   end
 

@@ -106,24 +106,6 @@ RSpec.describe 'Stack::Instance' do
     it 'will use an instance-specific working folder' do
       expect(stack_instance.working_folder).to match(/-work\/my_stack$/)
     end
-
-    it 'is planned without error' do
-      expect { stack_instance.plan }.not_to raise_error
-    end
-
-    it 'returns a reasonable-looking plan command' do
-      expect( stack_instance.plan_dry ).to match(/terraform plan/)
-    end
-
-    it 'includes the instance parameters in the terraform command' do
-      expect( stack_instance.plan_dry ).to match(/-var 'x=9'/)
-      expect( stack_instance.plan_dry ).to match(/-var 'y=8'/)
-    end
-
-    it 'includes the required resources in the terraform command' do
-      expect( stack_instance.plan_dry ).to match(/-var 'a=1'/)
-      expect( stack_instance.plan_dry ).to match(/-var 'b=2'/)
-    end
   end
 
 end
