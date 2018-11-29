@@ -38,21 +38,19 @@ RSpec.describe 'Stack::Instance' do
   }
 
   describe 'minimal instance' do
-
     it 'has the expected stack_identifier' do
       expect(stack_instance.id).to eq('test_stack_instance')
     end
 
     it 'defines a working folder for the instance' do
-      expect(stack_instance.working_folder).to eq("#{working_folder}")
+      expect(stack_instance.working_folder).to eq("#{working_folder}/#{stack_instance.id}")
     end
+  end
 
     # it 'copies the source to the working folder' do
     #   working_copy_folder = stack_instance.prepare
 
     # end
 
-
-  end
 
 end

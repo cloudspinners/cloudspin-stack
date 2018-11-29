@@ -17,7 +17,7 @@ module Cloudspin
         validate_id(id)
         @id = id
         @stack_definition = stack_definition
-        @working_folder   = base_working_folder
+        @working_folder   = "#{base_working_folder}/#{id}"
         @configuration    = configuration
         @terraform_command_arguments = {}
       end
@@ -62,7 +62,7 @@ module Cloudspin
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
-            base_working_folder: ensure_folder("#{base_working_folder}/#{instance_configuration.instance_identifier}"),
+            base_working_folder: ensure_folder(base_working_folder),
             configuration: instance_configuration
           )
       end
