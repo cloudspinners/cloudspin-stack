@@ -62,12 +62,12 @@ module Cloudspin
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
-            base_working_folder: ensure_folder(base_working_folder),
+            base_working_folder: base_working_folder,
             configuration: instance_configuration
           )
       end
 
-      def self.ensure_folder(folder)
+      def ensure_folder(folder)
         FileUtils.mkdir_p folder
         Pathname.new(folder).realdirpath.to_s
       end
@@ -111,7 +111,7 @@ module Cloudspin
         mkdir_p File.dirname(working_folder)
         cp_r @stack_definition.source_path, working_folder
         ensure_state_folder
-        working_folder
+        ensure_folder(working_folder)
       end
 
       def clean(folder)
@@ -144,7 +144,7 @@ module Cloudspin
       # TODO: Redundant? The folder is created in the BackendConfiguration class ...
       def ensure_state_folder
         if configuration.has_local_state_configuration?
-          Instance.ensure_folder(configuration.backend_configuration.local_state_folder)
+          ensure_folder(configuration.backend_configuration.local_state_folder)
         end
       end
 
