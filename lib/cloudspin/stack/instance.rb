@@ -11,13 +11,13 @@ module Cloudspin
       def initialize(
             id:,
             stack_definition:,
-            working_folder:,
+            base_working_folder:,
             configuration:
       )
         validate_id(id)
         @id = id
         @stack_definition = stack_definition
-        @working_folder   = working_folder
+        @working_folder   = base_working_folder
         @configuration    = configuration
         @terraform_command_arguments = {}
       end
@@ -62,7 +62,7 @@ module Cloudspin
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
-            working_folder: ensure_folder("#{base_working_folder}/#{instance_configuration.instance_identifier}"),
+            base_working_folder: ensure_folder("#{base_working_folder}/#{instance_configuration.instance_identifier}"),
             configuration: instance_configuration
           )
       end
@@ -99,13 +99,22 @@ module Cloudspin
       end
 
       def prepare_working_copy
-        clean_tf_folder(working_folder)
-        mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.source_path, working_folder
-        ensure_state_folder
+        prepare
       end
 
       def clean_tf_folder(folder)
+        clean(folder)
+      end
+
+      def prepare
+        clean(working_folder)
+        mkdir_p File.dirname(working_folder)
+        cp_r @stack_definition.source_path, working_folder
+        ensure_state_folder
+        working_folder
+      end
+
+      def clean(folder)
         FileUtils.rm_rf("#{folder}/.terraform")
       end
 

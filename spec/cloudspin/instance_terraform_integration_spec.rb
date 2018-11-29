@@ -13,7 +13,7 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
     Cloudspin::Stack::Instance.new(
       id: 'test_stack_instance',
       stack_definition: stack_definition,
-      working_folder: working_folder,
+      base_working_folder: working_folder,
       configuration: instance_configuration
     )
   }
