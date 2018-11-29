@@ -91,9 +91,9 @@ module Cloudspin
       end
 
       def init_dry
-        if configuration.backend_configuration.migrate_state?
-          "cp #{configuration.backend_configuration.local_statefile} -> #{@working_folder}/terraform.tfstate"
-        end
+        # if configuration.backend_configuration.migrate_state?
+        #   "cp #{configuration.backend_configuration.local_statefile} -> #{@working_folder}/terraform.tfstate"
+        # end
         init_command = RubyTerraform::Commands::Init.new
         command_line_builder = init_command.instantiate_builder
         configured_command = init_command.configure_command(
