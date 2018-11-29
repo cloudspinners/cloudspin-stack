@@ -27,15 +27,15 @@ module Cloudspin
     option :plan, :type => :boolean, :default => false
     option :'show-init', :type => :boolean, :default => true
     def up
-      puts instance.init_dry if options[:'show-init']
+      puts terraform_runner.init_dry if options[:'show-init']
       if options[:plan] && options[:dry]
-        puts instance.plan_dry
+        puts terraform_runner.plan_dry
       elsif options[:plan] && ! options[:dry]
-        puts instance.plan
+        puts terraform_runner.plan
       elsif ! options[:plan] && options[:dry]
-        puts instance.up_dry
+        puts terraform_runner.up_dry
       else
-        instance.up
+        terraform_runner.up
       end
     end
 
@@ -44,15 +44,15 @@ module Cloudspin
     option :plan, :type => :boolean, :default => false
     option :'show-init', :type => :boolean, :default => true
     def down
-      puts instance.init_dry if options[:'show-init']
+      puts terraform_runner.init_dry if options[:'show-init']
       if options[:plan] && options[:dry]
-        puts instance.plan_dry(plan_destroy: true)
+        puts terraform_runner.plan_dry(plan_destroy: true)
       elsif options[:plan] && ! options[:dry]
-        puts instance.plan(plan_destroy: true)
+        puts terraform_runner.plan(plan_destroy: true)
       elsif ! options[:plan] && options[:dry]
-        puts instance.down_dry
+        puts terraform_runner.down_dry
       else
-        instance.down
+        terraform_runner.down
       end
     end
 
@@ -74,6 +74,14 @@ module Cloudspin
           definition_location: options[:source],
           base_folder: '.',
           base_working_folder: './work'
+        )
+      end
+
+      def terraform_runner
+        Cloudspin::Stack::Terraform.new(
+          working_folder: instance.working_folder,
+          terraform_variables: instance.terraform_variables,
+          terraform_init_arguments: instance.terraform_init_arguments
         )
       end
 
