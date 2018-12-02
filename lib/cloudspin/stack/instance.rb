@@ -68,11 +68,6 @@ module Cloudspin
           )
       end
 
-      def ensure_folder(folder)
-        FileUtils.mkdir_p folder
-        Pathname.new(folder).realdirpath.to_s
-      end
-
       def self.add_backend_configuration_source(terraform_source_folder)
         # puts "DEBUG: Creating file #{terraform_source_folder}/_cloudspin_created_backend.tf"
         File.open("#{terraform_source_folder}/_cloudspin_created_backend.tf", 'w') { |backend_file|
@@ -83,6 +78,30 @@ module Cloudspin
           TF_BACKEND_SOURCE
           )
         }
+      end
+
+      def prepare
+        clean(working_folder)
+        mkdir_p File.dirname(working_folder)
+        cp_r @stack_definition.source_path, working_folder
+        ensure_state_folder
+        ensure_folder(working_folder)
+      end
+
+      def clean(folder)
+        FileUtils.rm_rf("#{folder}/.terraform")
+      end
+
+      def ensure_folder(folder)
+        FileUtils.mkdir_p folder
+        Pathname.new(folder).realdirpath.to_s
+      end
+
+      # TODO: Redundant? The folder is created in the BackendConfiguration class ...
+      def ensure_state_folder
+        if configuration.has_local_state_configuration?
+          ensure_folder(configuration.backend_configuration.local_state_folder)
+        end
       end
 
       def validate_id(raw_id)
@@ -99,16 +118,20 @@ module Cloudspin
         configuration.resource_values
       end
 
-      def prepare
-        clean(working_folder)
-        mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.source_path, working_folder
-        ensure_state_folder
-        ensure_folder(working_folder)
+      def terraform_variables
+        parameter_values.merge(resource_values) { |key, oldval, newval|
+          raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
+        }.merge({ 'instance_identifier' => id })
       end
 
-      def clean(folder)
-        FileUtils.rm_rf("#{folder}/.terraform")
+      def terraform_init_arguments
+        # TODO: Unsmell these
+        # (maybe backend_configuration belongs attached directly to this class?)
+        configuration.backend_configuration.terraform_init_parameters
+      end
+
+      def terraform_command_arguments
+        configuration.backend_configuration.terraform_command_parameters
       end
 
       # def migrate
@@ -133,29 +156,6 @@ module Cloudspin
       #   # puts "DEBUG: Preparing to migrate state from #{configuration.backend_configuration.local_statefile}"
       #   cp configuration.backend_configuration.local_statefile, "#{working_folder}/terraform.tfstate"
       # end
-
-      # TODO: Redundant? The folder is created in the BackendConfiguration class ...
-      def ensure_state_folder
-        if configuration.has_local_state_configuration?
-          ensure_folder(configuration.backend_configuration.local_state_folder)
-        end
-      end
-
-      def terraform_variables
-        parameter_values.merge(resource_values) { |key, oldval, newval|
-          raise "Duplicate values for terraform variable '#{key}' ('#{oldval}' and '#{newval}')"
-        }.merge({ 'instance_identifier' => id })
-      end
-
-      def terraform_init_arguments
-        # TODO: Unsmell these
-        # (maybe backend_configuration belongs attached directly to this class?)
-        configuration.backend_configuration.terraform_init_parameters
-      end
-
-      def terraform_command_arguments
-        configuration.backend_configuration.terraform_command_parameters
-      end
 
     end
   end
