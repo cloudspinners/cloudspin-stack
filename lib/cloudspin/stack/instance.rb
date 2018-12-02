@@ -85,6 +85,7 @@ module Cloudspin
         create_working_folder
         copy_instance_source
         prepare_state
+        @working_folder
       end
 
       def clean_working_folder

@@ -52,12 +52,11 @@ RSpec.describe 'Stack::Instance' do
       stack_instance.prepare
       expect(File).to be_directory("#{working_folder}/#{stack_instance.id}")
     end
+
+    it 'copies the source to the working folder' do
+      working_copy_folder = stack_instance.prepare
+      expect(File.exists?("#{working_copy_folder}/main.tf")).to be(true)
+    end
   end
-
-    # it 'copies the source to the working folder' do
-    #   working_copy_folder = stack_instance.prepare
-
-    # end
-
 
 end
