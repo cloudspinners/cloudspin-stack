@@ -92,25 +92,7 @@ module Cloudspin
       end
 
       def prepare_state
-        @backend_configuration.prepare
-        if @backend_configuration.remote_state?
-          # puts "DEBUG: Remote state"
-          add_backend_terraform_file
-        else
-          # puts "DEBUG: Local state"
-        end
-      end
-
-      def add_backend_terraform_file
-        # puts "DEBUG: Creating file #{working_folder}/_cloudspin_backend.tf"
-        File.open("#{working_folder}/_cloudspin_backend.tf", 'w') { |backend_file|
-          backend_file.write(<<~TF_BACKEND_SOURCE
-            terraform {
-              backend "s3" {}
-            }
-          TF_BACKEND_SOURCE
-          )
-        }
+        @backend_configuration.prepare(working_folder: working_folder)
       end
 
       def validate_id(raw_id)

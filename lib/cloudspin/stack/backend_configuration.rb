@@ -75,13 +75,26 @@ module Cloudspin
         end
       end
 
-      def prepare
+      def prepare(working_folder:)
         if remote_state?
+          add_backend_terraform_file(working_folder)
           # puts "DEBUG: Prepare for use of remote state"
         else
           # puts "DEBUG: Prepare for use of local state"
           create_local_state_folder
         end
+      end
+
+      def add_backend_terraform_file(working_folder)
+        # puts "DEBUG: Creating file #{working_folder}/_cloudspin_backend.tf"
+        File.open("#{working_folder}/_cloudspin_backend.tf", 'w') { |backend_file|
+          backend_file.write(<<~TF_BACKEND_SOURCE
+            terraform {
+              backend "s3" {}
+            }
+          TF_BACKEND_SOURCE
+          )
+        }
       end
 
       def create_local_state_folder
