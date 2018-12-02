@@ -81,15 +81,22 @@ module Cloudspin
       end
 
       def prepare
-        clean(working_folder)
-        mkdir_p File.dirname(working_folder)
-        cp_r @stack_definition.source_path, working_folder
-        ensure_state_folder
-        ensure_folder(working_folder)
+        clean_working_folder
+        create_working_folder
+        copy_instance_source
+        prepare_state
       end
 
-      def clean(folder)
-        FileUtils.rm_rf("#{folder}/.terraform")
+      def clean_working_folder
+        FileUtils.rm_rf(working_folder)
+      end
+
+      def create_working_folder
+        mkdir_p File.dirname(working_folder)
+      end
+
+      def copy_instance_source
+        cp_r @stack_definition.source_path, working_folder
       end
 
       def ensure_folder(folder)
@@ -97,8 +104,8 @@ module Cloudspin
         Pathname.new(folder).realdirpath.to_s
       end
 
-      # TODO: Redundant? The folder is created in the BackendConfiguration class ...
-      def ensure_state_folder
+      def prepare_state
+        # TODO: Redundant? The folder is created in the BackendConfiguration class ...
         if configuration.has_local_state_configuration?
           ensure_folder(configuration.backend_configuration.local_state_folder)
         end
