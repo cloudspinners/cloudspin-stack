@@ -17,9 +17,6 @@ module Cloudspin
       attr_reader :instance_identifier
       attr_reader :backend_configuration
 
-
-      attr_reader :Xterraform_backend
-
       def initialize(
           configuration_values: {},
           stack_definition:,

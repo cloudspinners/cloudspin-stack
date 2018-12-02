@@ -19,24 +19,37 @@ module Cloudspin
         @stack_name           = stack_name
         @base_folder          = base_folder
 
-        @has_remote_state         = ! @terraform_backend_configuration_values['bucket'].nil?
+        configure_for_remote_backend
+        configure_to_migrate_backend
+        configure_for_local_backend
+      end
 
-        if @has_remote_state
+      def configure_for_remote_backend
+        @has_remote_state = if @terraform_backend_configuration_values['bucket'].nil?
+          false
+        else
           # puts "DEBUG: Using remote state"
           @local_state_folder = nil
           @local_statefile = nil
           @terraform_backend_configuration_values['key'] = default_state_key
-          @migrate_state = initialize_migrate_flag
-        else
-          # puts "DEBUG: Not using remote state"
-          @migrate_state = false
+          true
         end
+      end
 
+      def configure_to_migrate_backend
+        @migrate_state = if @terraform_backend_configuration_values['migrate'].nil?
+          false
+        else
+          migrate_value = @terraform_backend_configuration_values.delete('migrate')
+          migrate_value.to_s.downcase == 'true'
+        end
+      end
+
+      def configure_for_local_backend
         if !@has_remote_state || @migrate_state
-          @local_state_folder = intialize_state_folder
+          # puts "DEBUG: Not using remote state, or else is migrating state"
+          @local_state_folder = "#{@base_folder}/state/#{@instance_identifier}"
           @local_statefile = "#{@local_state_folder}/#{@instance_identifier}.tfstate"
-          # puts "DEBUG: Local statefile: #{@local_statefile}"
-          # puts "DEBUG: Migrating? #{@migrate_state}"
         end
       end
 
@@ -62,19 +75,19 @@ module Cloudspin
         end
       end
 
-      def intialize_state_folder
-        # TODO: Prefer to not actually create the folder, but seemed necessary to build the full path string.
-        FileUtils.mkdir_p "#{@base_folder}/state"
-        Pathname.new("#{@base_folder}/state/#{@instance_identifier}").realdirpath.to_s
+      def prepare
+        if remote_state?
+          # puts "DEBUG: Prepare for use of remote state"
+        else
+          # puts "DEBUG: Prepare for use of local state"
+          create_local_state_folder
+        end
       end
 
-      def initialize_migrate_flag
-        if @terraform_backend_configuration_values['migrate'].nil?
-          false
-        else
-          migrate_value = @terraform_backend_configuration_values.delete('migrate')
-          migrate_value.to_s.downcase == 'true'
-        end
+      def create_local_state_folder
+        # puts "DEBUG: backend_configuration.create_local_state_folder: #{@local_state_folder}"
+        FileUtils.mkdir_p @local_state_folder
+        # Pathname.new(@local_state_folder).realdirpath.to_s
       end
 
       def default_state_key

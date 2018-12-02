@@ -6,7 +6,11 @@ module Cloudspin
 
       include FileUtils
 
-      attr_reader :id, :configuration, :working_folder, :terraform_command_arguments
+      attr_reader :id,
+        :configuration,
+        :working_folder,
+        :backend_configuration,
+        :terraform_command_arguments
 
       def initialize(
             id:,
@@ -19,6 +23,7 @@ module Cloudspin
         @stack_definition = stack_definition
         @working_folder   = "#{base_working_folder}/#{id}"
         @configuration    = configuration
+        @backend_configuration = configuration.backend_configuration
         @terraform_command_arguments = {}
         # puts "DEBUG: instance working_folder: #{@working_folder}"
       end
@@ -53,31 +58,12 @@ module Cloudspin
           base_folder: base_folder
         )
 
-        if instance_configuration.has_remote_state_configuration? && stack_definition.is_from_remote?
-          # puts "DEBUG: Stack instance is configured to use remote terraform state AND remote stack definition code"
-          add_backend_configuration_source(stack_definition.source_path)
-        # else
-        #   puts "DEBUG: Stack instance is configured to use local terraform state AND/OR local stack definition code"
-        end
-
         self.new(
             id: instance_configuration.instance_identifier,
             stack_definition: stack_definition,
             base_working_folder: base_working_folder,
             configuration: instance_configuration
           )
-      end
-
-      def self.add_backend_configuration_source(terraform_source_folder)
-        # puts "DEBUG: Creating file #{terraform_source_folder}/_cloudspin_created_backend.tf"
-        File.open("#{terraform_source_folder}/_cloudspin_created_backend.tf", 'w') { |backend_file|
-          backend_file.write(<<~TF_BACKEND_SOURCE
-            terraform {
-              backend "s3" {}
-            }
-          TF_BACKEND_SOURCE
-          )
-        }
       end
 
       def prepare
@@ -106,10 +92,25 @@ module Cloudspin
       end
 
       def prepare_state
-        # TODO: Redundant? The folder is created in the BackendConfiguration class ...
-        if configuration.has_local_state_configuration?
-          ensure_folder(configuration.backend_configuration.local_state_folder)
+        @backend_configuration.prepare
+        if @backend_configuration.remote_state?
+          # puts "DEBUG: Remote state"
+          add_backend_terraform_file
+        else
+          # puts "DEBUG: Local state"
         end
+      end
+
+      def add_backend_terraform_file
+        # puts "DEBUG: Creating file #{working_folder}/_cloudspin_backend.tf"
+        File.open("#{working_folder}/_cloudspin_backend.tf", 'w') { |backend_file|
+          backend_file.write(<<~TF_BACKEND_SOURCE
+            terraform {
+              backend "s3" {}
+            }
+          TF_BACKEND_SOURCE
+          )
+        }
       end
 
       def validate_id(raw_id)
@@ -135,11 +136,11 @@ module Cloudspin
       def terraform_init_arguments
         # TODO: Unsmell these
         # (maybe backend_configuration belongs attached directly to this class?)
-        configuration.backend_configuration.terraform_init_parameters
+        @backend_configuration.terraform_init_parameters
       end
 
       def terraform_command_arguments
-        configuration.backend_configuration.terraform_command_parameters
+        @backend_configuration.terraform_command_parameters
       end
 
       # def migrate
@@ -147,7 +148,7 @@ module Cloudspin
       #   mkdir_p File.dirname(working_folder)
       #   cp_r @stack_definition.source_path, working_folder
       #   Dir.chdir(working_folder) do
-      #   # cp configuration.backend_configuration.local_state_folder
+      #   # cp @backend_configuration.local_state_folder
       #     terraform_init
       #     # terraform_state_push()
       #     RubyTerraform.plan(terraform_command_parameters)
@@ -155,14 +156,14 @@ module Cloudspin
       # end
 
       # def init
-        # if configuration.backend_configuration.migrate_state?
+        # if @backend_configuration.migrate_state?
         #   prepare_state_for_migration
         # end
       # end
 
       # def prepare_state_for_migration
-      #   # puts "DEBUG: Preparing to migrate state from #{configuration.backend_configuration.local_statefile}"
-      #   cp configuration.backend_configuration.local_statefile, "#{working_folder}/terraform.tfstate"
+      #   # puts "DEBUG: Preparing to migrate state from #{@backend_configuration.local_statefile}"
+      #   cp @backend_configuration.local_statefile, "#{working_folder}/terraform.tfstate"
       # end
 
     end
