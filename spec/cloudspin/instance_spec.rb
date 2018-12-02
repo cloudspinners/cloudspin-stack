@@ -50,7 +50,6 @@ RSpec.describe 'Stack::Instance' do
   describe 'preparing the instance' do
     it 'creates the working folder' do
       stack_instance.prepare
-      expect(File).to exist("#{working_folder}/#{stack_instance.id}")
       expect(File).to be_directory("#{working_folder}/#{stack_instance.id}")
     end
   end

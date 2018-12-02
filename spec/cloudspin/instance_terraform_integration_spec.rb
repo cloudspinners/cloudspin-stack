@@ -3,7 +3,7 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
 
   let(:terraform_runner) {
     Cloudspin::Stack::Terraform.new(
-      working_folder: working_folder,
+      working_folder: stack_instance.working_folder,
       terraform_variables: stack_instance.terraform_variables,
       terraform_init_arguments: stack_instance.terraform_init_arguments
     )
@@ -13,7 +13,7 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
     Cloudspin::Stack::Instance.new(
       id: 'test_stack_instance',
       stack_definition: stack_definition,
-      base_working_folder: working_folder,
+      base_working_folder: base_working_folder,
       configuration: instance_configuration
     )
   }
@@ -47,9 +47,8 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
     Cloudspin::Stack::Definition.new(source_path: source_path, stack_name: 'my_stack')
   }
 
-  let(:working_folder) {
+  let(:base_working_folder) {
     FileUtils.mkdir_p "#{base_folder}/work"
-    File.write("#{base_folder}/work/main.tf", '# Empty terraform file')
     "#{base_folder}/work"
   }
 
@@ -59,13 +58,20 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
     folder
   }
 
-  let(:source_path) { '/does/not/matter' }
+  let(:source_path) {
+    src = Dir.mktmpdir
+    File.write("#{src}/main.tf", '# Empty terraform file')
+    src
+  }
 
 
   describe 'given a stack instance' do
 
     it 'is planned without error' do
-      expect { terraform_runner.plan }.not_to raise_error
+      expect {
+        stack_instance.prepare
+        terraform_runner.plan
+      }.not_to raise_error
     end
 
     it 'returns a reasonable-looking plan command' do

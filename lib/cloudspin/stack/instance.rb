@@ -20,6 +20,7 @@ module Cloudspin
         @working_folder   = "#{base_working_folder}/#{id}"
         @configuration    = configuration
         @terraform_command_arguments = {}
+        # puts "DEBUG: instance working_folder: #{@working_folder}"
       end
 
       def self.from_folder(
@@ -96,14 +97,6 @@ module Cloudspin
 
       def resource_values
         configuration.resource_values
-      end
-
-      def prepare_working_copy
-        prepare
-      end
-
-      def clean_tf_folder(folder)
-        clean(folder)
       end
 
       def prepare

@@ -31,10 +31,12 @@ module Cloudspin
       if options[:plan] && options[:dry]
         puts terraform_runner.plan_dry
       elsif options[:plan] && ! options[:dry]
+        instance.prepare
         puts terraform_runner.plan
       elsif ! options[:plan] && options[:dry]
         puts terraform_runner.up_dry
       else
+        instance.prepare
         terraform_runner.up
       end
     end
@@ -48,10 +50,12 @@ module Cloudspin
       if options[:plan] && options[:dry]
         puts terraform_runner.plan_dry(plan_destroy: true)
       elsif options[:plan] && ! options[:dry]
+        instance.prepare
         puts terraform_runner.plan(plan_destroy: true)
       elsif ! options[:plan] && options[:dry]
         puts terraform_runner.down_dry
       else
+        instance.prepare
         terraform_runner.down
       end
     end
