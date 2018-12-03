@@ -1,4 +1,4 @@
-RSpec.describe 'Stack::InstanceConfiguration' do
+RSpec.describe 'Stack::BackendConfiguration' do
 
   let(:backend_configuration) {
     Cloudspin::Stack::BackendConfiguration.new(
