@@ -104,6 +104,5 @@ RSpec.describe 'Stack::Instance' do
     end
   end
 
-
 end
 
