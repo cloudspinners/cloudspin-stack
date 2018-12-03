@@ -41,6 +41,16 @@ module Cloudspin
       end
     end
 
+    desc 'prepare', 'Prepare the working folder and backend for the stack instance'
+    option :'show-init', :type => :boolean, :default => true
+    def prepare
+      instance.prepare
+      puts terraform_runner.init_dry if options[:'show-init']
+      puts terraform_runner.init
+      puts "Working folder prepared: #{instance.working_folder}"
+      puts "Ready:\ncd #{instance.working_folder} && terraform apply"
+    end
+
     desc 'down', 'Destroy the stack instance'
     option :dry, :type => :boolean, :default => false
     option :plan, :type => :boolean, :default => false

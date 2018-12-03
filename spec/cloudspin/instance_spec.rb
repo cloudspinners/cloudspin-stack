@@ -60,6 +60,11 @@ RSpec.describe 'Stack::Instance' do
       working_copy_folder = stack_instance.prepare
       expect(File.exists?("#{working_copy_folder}/main.tf")).to be(true)
     end
+
+    it 'generates a .tfvars file' do
+      working_copy_folder = stack_instance.prepare
+      expect(File.exists?("#{working_copy_folder}/_cloudspin-test_stack_instance.auto.tfvars")).to be(true)
+    end
   end
 
   describe 'with local backend' do

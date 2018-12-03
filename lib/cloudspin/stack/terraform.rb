@@ -15,7 +15,8 @@ module Cloudspin
         terraform_init_arguments: {}
       )
         @working_folder = working_folder
-        @terraform_variables = terraform_variables
+        # @terraform_variables = terraform_variables
+        @terraform_variables = {}
         @terraform_init_arguments = terraform_init_arguments
       end
 
@@ -88,6 +89,12 @@ module Cloudspin
 
       def terraform_init
         RubyTerraform.init(@terraform_init_arguments)
+      end
+
+      def init
+        Dir.chdir(@working_folder) do
+          terraform_init
+        end
       end
 
       def init_dry

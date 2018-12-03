@@ -78,20 +78,10 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
       expect( terraform_runner.plan_dry ).to match(/terraform plan/)
     end
 
-    it 'does not pass instance configuration values as terraform variables' do
-      expect( terraform_runner.plan_dry ).to_not match(/-var 'a=1'/)
-      expect( terraform_runner.plan_dry ).to_not match(/-var 'b=2'/)
+    it 'does not pass the terraform variables on the command line' do
+      expect( terraform_runner.plan_dry ).to_not match(/-var/)
     end
 
-    it 'passes the configuration parameter values as terraform variables' do
-      expect( terraform_runner.plan_dry ).to match(/-var 'c=3'/)
-      expect( terraform_runner.plan_dry ).to match(/-var 'd=4'/)
-    end
-
-    it 'passes the resource values as terraform variables' do
-      expect( terraform_runner.plan_dry ).to match(/-var 'e=5'/)
-      expect( terraform_runner.plan_dry ).to match(/-var 'f=6'/)
-    end
   end
 
 end
