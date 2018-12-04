@@ -1,4 +1,3 @@
-
 RSpec.describe 'Stack::Instance' do
 
   let(:stack_definition) {

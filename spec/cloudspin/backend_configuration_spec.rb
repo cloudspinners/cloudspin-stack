@@ -80,15 +80,15 @@ RSpec.describe 'Stack::InstanceConfiguration' do
       }
     } 
 
-    it 'does use remote state' do
-      expect(backend_configuration.remote_state?).to be true
-    end
-
-    it 'will try to migrate state' do
+    it 'knows we want to migrate the state' do
       expect(backend_configuration.migrate_state?).to be true
     end
 
-    it 'has the local state path to migrate' do
+    it 'has remote state' do
+      expect(backend_configuration.remote_state?).to be true
+    end
+
+    it 'has local state' do
       expect(backend_configuration.local_state_folder).to match /\/state\/dummy_instance$/
     end
   end
