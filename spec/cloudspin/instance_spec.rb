@@ -101,4 +101,38 @@ RSpec.describe 'Stack::Instance' do
     end
   end
 
+  describe 'terraform variable formatting' do
+    it 'handles boolean true correctly' do
+      expect(stack_instance.format_tfvar(true)).to eq('true')
+    end
+
+    it 'handles boolean false correctly' do
+      expect(stack_instance.format_tfvar(false)).to eq('false')
+    end
+
+    it 'puts quotes on a string' do
+      expect(stack_instance.format_tfvar("some string")).to eq('"some string"')
+    end
+
+    it 'puts quotes on a string with commas' do
+      expect(stack_instance.format_tfvar("some,other,strings")).to eq('"some,other,strings"')
+    end
+
+    it 'outputs a list of strings with quotes around each' do
+      expect(stack_instance.format_tfvar(['a','b'])).to eq('["a", "b"]')
+    end
+
+    it 'handles a list with mixed boolean and string' do
+      expect(stack_instance.format_tfvar([false,'b'])).to eq('[false, "b"]')
+    end
+
+    it 'handles hashes correctly' do
+      expect(stack_instance.format_tfvar({
+        'key1' => 'value1',
+        'key2' => true
+      })).to eq('{ "key1": "value1", "key2": true }')
+    end
+
+  end
+
 end
