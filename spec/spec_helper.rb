@@ -1,6 +1,7 @@
 require 'bundler/setup'
 require 'cloudspin/stack'
 require 'tempfile'
+require 'fileutils'
 require 'definition_helpers'
 
 RSpec.configure do |config|
@@ -10,4 +11,5 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
   config.include DefinitionHelpers
+  config.include FileUtils
 end

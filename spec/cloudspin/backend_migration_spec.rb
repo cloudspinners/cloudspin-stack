@@ -6,7 +6,7 @@ RSpec.describe 'Stack::Instance' do
 
   let(:base_folder) {
     folder = Dir.mktmpdir(['cloudspin-'])
-    FileUtils.mkdir_p "#{folder}/state"
+    mkdir_p "#{folder}/state"
     folder
   }
 
@@ -43,30 +43,16 @@ RSpec.describe 'Stack::Instance' do
     }
   }
 
-  describe 'not configured for migration' do
-    let(:terraform_backend_configuration) {
-      {
-        'bucket' => 'dummy_bucket_name',
-        'migrate' => false
-      }
-    } 
+  describe 'with remote backend and an existing local statefile' do
 
-    it 'does use remote state' do
-      expect(stack_instance.backend_configuration.remote_state?).to be true
+    let!(:statefile) do
+      mkdir_p "#{base_folder}/state/my_stack"
+      touch "#{base_folder}/state/my_stack/my_stack.tfstate"
     end
-
-    it 'will not migrate state' do
-      expect(stack_instance.backend_configuration.migrate_state?).to be false
-    end
-  end
-
-
-  describe 'configured for migration' do
 
     let(:terraform_backend_configuration) {
       {
-        'bucket' => 'dummy_bucket_name',
-        'migrate' => 'TRUE'
+        'bucket' => 'dummy_bucket_name'
       }
     }
 
@@ -74,10 +60,25 @@ RSpec.describe 'Stack::Instance' do
       expect(stack_instance.backend_configuration.migrate_state?).to be true
     end
 
+    it 'creates a local state folder' do
+      working_copy_folder = stack_instance.prepare
+      expect(File).to be_directory(stack_instance.backend_configuration.local_state_folder)
+    end
+
     it 'adds a backend configuration file' do
       working_copy_folder = stack_instance.prepare
       expect(File).to exist("#{working_copy_folder}/_cloudspin_backend.tf")
     end
+
+    it 'copies the statefile to the working folder' do
+      working_copy_folder = stack_instance.prepare
+      expect(File).to exist("#{working_copy_folder}/terraform.tfstate")
+    end
+
+    it 'will use the -backend argument for the terraform init command' do
+      expect(stack_instance.terraform_init_arguments[:backend]).to_not be_nil
+    end
+
   end
 
 end

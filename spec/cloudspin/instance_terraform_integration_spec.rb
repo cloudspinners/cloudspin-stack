@@ -48,13 +48,13 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
   }
 
   let(:base_working_folder) {
-    FileUtils.mkdir_p "#{base_folder}/work"
+    mkdir_p "#{base_folder}/work"
     "#{base_folder}/work"
   }
 
   let(:base_folder) {
     folder = Dir.mktmpdir(['cloudspin-'])
-    FileUtils.mkdir_p "#{folder}/state"
+    mkdir_p "#{folder}/state"
     folder
   }
 

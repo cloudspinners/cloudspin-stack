@@ -3,7 +3,7 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   # SMELL: We shouldn't need to have a physical state folder if we don't have an instance
   let(:base_folder) {
     folder = Dir.mktmpdir(['cloudspin-'])
-    FileUtils.mkdir_p "#{folder}/state"
+    mkdir_p "#{folder}/state"
     folder
   }
 

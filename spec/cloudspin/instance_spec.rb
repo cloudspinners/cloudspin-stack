@@ -6,7 +6,7 @@ RSpec.describe 'Stack::Instance' do
 
   let(:base_folder) {
     folder = Dir.mktmpdir(['cloudspin-'])
-    FileUtils.mkdir_p "#{folder}/state"
+    mkdir_p "#{folder}/state"
     folder
   }
 

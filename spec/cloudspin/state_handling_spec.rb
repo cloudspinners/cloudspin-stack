@@ -2,7 +2,7 @@ RSpec.describe 'Stack::Instance' do
 
   let(:base_folder) {
     folder = Dir.mktmpdir(['cloudspin-'])
-    FileUtils.mkdir_p "#{folder}/state"
+    mkdir_p "#{folder}/state"
     folder
   }
   let(:source_path) { '/does/not/matter/src' }
@@ -82,23 +82,6 @@ RSpec.describe 'Stack::Instance' do
       expect(stack_instance.terraform_command_arguments[:backend_config]).to be_nil
     end
 
-  end
-
-
-  describe 'configured to migrate to backend' do
-    let(:configuration_values) {
-      {
-        'terraform_backend' => {
-          'bucket' => 'dummy_bucket_name',
-          'region' => 'dummy_bucket_region',
-          'migrate' => 'TRUE'
-        }
-      }
-    }
-
-    it 'will use the -backend argument for the terraform init command' do
-      expect(stack_instance.terraform_init_arguments[:backend]).to_not be_nil
-    end
   end
 
 end

@@ -12,14 +12,16 @@ RSpec.describe 'Stack::InstanceConfiguration' do
   let(:terraform_backend_configuration_values) {{}} 
 
   let(:base_folder) {
-    folder = Dir.mktmpdir(['cloudspin-'])
-    FileUtils.mkdir_p "#{folder}/state"
-    folder
+    Dir.mktmpdir(['cloudspin-'])
   }
 
   describe 'with no instance configuration' do
     it 'does not use remote state' do
       expect(backend_configuration.remote_state?).to be false
+    end
+
+    it 'uses local state' do
+      expect(backend_configuration.local_state?).to be true
     end
 
     it 'sets a local state folder' do
@@ -72,41 +74,34 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     end
   end
 
-  describe 'with remote backend configuration migrate=true' do
+  describe 'with remote backend and local statefile' do
+
+    let!(:statefile) do
+      mkdir_p "#{base_folder}/state/dummy_instance"
+      touch "#{base_folder}/state/dummy_instance/dummy_instance.tfstate"
+    end
+
     let(:terraform_backend_configuration_values) {
       {
         'bucket' => 'dummy_bucket_name',
-        'migrate' => 'TRUE'
+        'region' => 'dummy_bucket_region'
       }
-    } 
+    }
 
     it 'knows we want to migrate the state' do
       expect(backend_configuration.migrate_state?).to be true
     end
 
-    it 'has remote state' do
+    it 'plans to use remote state' do
       expect(backend_configuration.remote_state?).to be true
     end
 
-    it 'has local state' do
+    it 'plans to use local state' do
+      expect(backend_configuration.local_state?).to be true
+    end
+
+    it 'has the path to the local state folder' do
       expect(backend_configuration.local_state_folder).to match /\/state\/dummy_instance$/
-    end
-  end
-
-  describe 'with remote backend configuration migrate=false' do
-    let(:terraform_backend_configuration_values) {
-      {
-        'bucket' => 'dummy_bucket_name',
-        'migrate' => false
-      }
-    } 
-
-    it 'does use remote state' do
-      expect(backend_configuration.remote_state?).to be true
-    end
-
-    it 'will not migrate state' do
-      expect(backend_configuration.migrate_state?).to be false
     end
   end
 

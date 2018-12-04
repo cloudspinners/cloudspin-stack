@@ -39,10 +39,6 @@ module Cloudspin
       end
 
       def up
-        # RubyTerraform.clean(directory: @working_folder)
-        # mkdir_p File.dirname(@working_folder)
-        # cp_r @stack_definition.source_path, @working_folder
-        # ensure_state_folder
         Dir.chdir(@working_folder) do
           terraform_init
           RubyTerraform.apply(terraform_command_parameters(auto_approve: true))
@@ -58,10 +54,6 @@ module Cloudspin
       end
 
       def down
-        # RubyTerraform.clean(directory: @working_folder)
-        # mkdir_p File.dirname(@working_folder)
-        # cp_r @stack_definition.source_path, @working_folder
-        # ensure_state_folder
         Dir.chdir(@working_folder) do
           terraform_init
           RubyTerraform.destroy(terraform_command_parameters(force: true))
@@ -77,10 +69,6 @@ module Cloudspin
       end
 
       def refresh
-        # RubyTerraform.clean(directory: @working_folder)
-        # mkdir_p File.dirname(@working_folder)
-        # cp_r @stack_definition.source_path, @working_folder
-        # ensure_state_folder
         Dir.chdir(@working_folder) do
           terraform_init
           RubyTerraform.refresh(terraform_command_parameters(force: true))
@@ -98,9 +86,6 @@ module Cloudspin
       end
 
       def init_dry
-        # if configuration.backend_configuration.migrate_state?
-        #   "cp #{configuration.backend_configuration.local_statefile} -> #{@working_folder}/terraform.tfstate"
-        # end
         init_command = RubyTerraform::Commands::Init.new
         command_line_builder = init_command.instantiate_builder
         configured_command = init_command.configure_command(

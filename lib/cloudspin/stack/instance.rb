@@ -88,7 +88,7 @@ module Cloudspin
       end
 
       def ensure_folder(folder)
-        FileUtils.mkdir_p folder
+        mkdir_p folder
         Pathname.new(folder).realdirpath.to_s
       end
 
@@ -132,29 +132,6 @@ module Cloudspin
       def terraform_command_arguments
         @backend_configuration.terraform_command_parameters
       end
-
-      # def migrate
-      #   RubyTerraform.clean(directory: working_folder)
-      #   mkdir_p File.dirname(working_folder)
-      #   cp_r @stack_definition.source_path, working_folder
-      #   Dir.chdir(working_folder) do
-      #   # cp @backend_configuration.local_state_folder
-      #     terraform_init
-      #     # terraform_state_push()
-      #     RubyTerraform.plan(terraform_command_parameters)
-      #   end
-      # end
-
-      # def init
-        # if @backend_configuration.migrate_state?
-        #   prepare_state_for_migration
-        # end
-      # end
-
-      # def prepare_state_for_migration
-      #   # puts "DEBUG: Preparing to migrate state from #{@backend_configuration.local_statefile}"
-      #   cp @backend_configuration.local_statefile, "#{working_folder}/terraform.tfstate"
-      # end
 
     end
   end
