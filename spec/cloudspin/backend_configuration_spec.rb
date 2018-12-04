@@ -36,12 +36,12 @@ RSpec.describe 'Stack::InstanceConfiguration' do
       expect(backend_configuration.migrate_state?).to be false
     end
 
-    it 'sets the necessary terraform init parameters' do
-      expect(backend_configuration.terraform_init_parameters).to eq({})
+    it 'will not add any arguments to the terraform init command' do
+      expect(backend_configuration.terraform_init_arguments).to eq({})
     end
 
-    it 'sets the necessary terraform command parameters' do
-      expect(backend_configuration.terraform_command_parameters[:state]).to match /\/state\/dummy_instance\/dummy_instance\.tfstate$/
+    it 'will pass the local statefile to the terraform command' do
+      expect(backend_configuration.terraform_command_arguments[:state]).to match /\/state\/dummy_instance\/dummy_instance\.tfstate$/
     end
   end
 
@@ -62,15 +62,15 @@ RSpec.describe 'Stack::InstanceConfiguration' do
     end
 
     it 'sets the necessary terraform init parameters' do
-      expect(backend_configuration.terraform_init_parameters[:backend]).to eq 'true'
+      expect(backend_configuration.terraform_init_arguments[:backend]).to eq 'true'
     end
 
     it 'does not include the -state argument for terraform init' do
-      expect(backend_configuration.terraform_init_parameters[:state]).to be_nil
+      expect(backend_configuration.terraform_init_arguments[:state]).to be_nil
     end
 
     it 'sets the necessary terraform command parameters' do
-      expect(backend_configuration.terraform_command_parameters).to eq({})
+      expect(backend_configuration.terraform_command_arguments).to eq({})
     end
   end
 

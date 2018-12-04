@@ -95,7 +95,8 @@ module Cloudspin
         Cloudspin::Stack::Terraform.new(
           working_folder: instance.working_folder,
           terraform_variables: instance.terraform_variables,
-          terraform_init_arguments: instance.terraform_init_arguments
+          terraform_init_arguments: instance.terraform_init_arguments,
+          terraform_command_arguments: instance.terraform_command_arguments
         )
       end
 

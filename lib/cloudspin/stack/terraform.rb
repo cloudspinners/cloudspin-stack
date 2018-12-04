@@ -12,18 +12,20 @@ module Cloudspin
       def initialize(
         working_folder: '.',
         terraform_variables: {},
-        terraform_init_arguments: {}
+        terraform_init_arguments: {},
+        terraform_command_arguments: {}
       )
         @working_folder = working_folder
         # @terraform_variables = terraform_variables
         @terraform_variables = {}
         @terraform_init_arguments = terraform_init_arguments
+        @base_terraform_command_arguments = terraform_command_arguments
       end
 
       def plan(plan_destroy: false)
         Dir.chdir(@working_folder) do
           terraform_init
-          RubyTerraform.plan(terraform_command_parameters(destroy: plan_destroy))
+          RubyTerraform.plan(terraform_command_arguments(destroy: plan_destroy))
         end
       end
 
@@ -32,7 +34,7 @@ module Cloudspin
         command_line_builder = plan_command.instantiate_builder
         configured_command = plan_command.configure_command(
           command_line_builder,
-          terraform_command_parameters(:destroy => plan_destroy)
+          terraform_command_arguments(:destroy => plan_destroy)
         )
         built_command = configured_command.build
         "cd #{@working_folder} && #{built_command.to_s}"
@@ -41,14 +43,14 @@ module Cloudspin
       def up
         Dir.chdir(@working_folder) do
           terraform_init
-          RubyTerraform.apply(terraform_command_parameters(auto_approve: true))
+          RubyTerraform.apply(terraform_command_arguments(auto_approve: true))
         end
       end
 
       def up_dry
         up_command = RubyTerraform::Commands::Apply.new
         command_line_builder = up_command.instantiate_builder
-        configured_command = up_command.configure_command(command_line_builder, terraform_command_parameters)
+        configured_command = up_command.configure_command(command_line_builder, terraform_command_arguments)
         built_command = configured_command.build
         "cd #{@working_folder} && #{built_command.to_s}"
       end
@@ -56,14 +58,14 @@ module Cloudspin
       def down
         Dir.chdir(@working_folder) do
           terraform_init
-          RubyTerraform.destroy(terraform_command_parameters(force: true))
+          RubyTerraform.destroy(terraform_command_arguments(force: true))
         end
       end
 
       def down_dry
         down_command = RubyTerraform::Commands::Destroy.new
         command_line_builder = down_command.instantiate_builder
-        configured_command = down_command.configure_command(command_line_builder, terraform_command_parameters)
+        configured_command = down_command.configure_command(command_line_builder, terraform_command_arguments)
         built_command = configured_command.build
         "cd #{@working_folder} && #{built_command.to_s}"
       end
@@ -71,7 +73,7 @@ module Cloudspin
       def refresh
         Dir.chdir(@working_folder) do
           terraform_init
-          RubyTerraform.refresh(terraform_command_parameters(force: true))
+          RubyTerraform.refresh(terraform_command_arguments(force: true))
         end
       end
 
@@ -101,10 +103,10 @@ module Cloudspin
       # For that matter, should we just call each of the actions on this class as static
       # methods? Does this class really need to hold any kind of state?
 
-      def terraform_command_parameters(added_parameters = {})
-        {
+      def terraform_command_arguments(added_parameters = {})
+        @base_terraform_command_arguments.merge({
           vars: @terraform_variables
-        }.merge(added_parameters)
+        }).merge(added_parameters)
       end
 
     end

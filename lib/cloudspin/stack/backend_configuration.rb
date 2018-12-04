@@ -91,7 +91,7 @@ module Cloudspin
         "#{@instance_identifier}.tfstate"
       end
 
-      def terraform_init_parameters
+      def terraform_init_arguments
         if remote_state?
           {
             backend: 'true',
@@ -103,7 +103,7 @@ module Cloudspin
         end
       end
 
-      def terraform_command_parameters
+      def terraform_command_arguments
         if local_state? && !migrate_state?
           {
             :state => @local_statefile

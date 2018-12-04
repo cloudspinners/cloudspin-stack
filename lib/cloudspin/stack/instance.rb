@@ -9,8 +9,7 @@ module Cloudspin
       attr_reader :id,
         :configuration,
         :working_folder,
-        :backend_configuration,
-        :terraform_command_arguments
+        :backend_configuration
 
       def initialize(
             id:,
@@ -24,7 +23,6 @@ module Cloudspin
         @working_folder   = "#{base_working_folder}/#{id}"
         @configuration    = configuration
         @backend_configuration = configuration.backend_configuration
-        @terraform_command_arguments = {}
         # puts "DEBUG: instance working_folder: #{@working_folder}"
       end
 
@@ -146,11 +144,11 @@ module Cloudspin
       end
 
       def terraform_init_arguments
-        @backend_configuration.terraform_init_parameters
+        @backend_configuration.terraform_init_arguments
       end
 
       def terraform_command_arguments
-        @backend_configuration.terraform_command_parameters
+        @backend_configuration.terraform_command_arguments
       end
 
     end

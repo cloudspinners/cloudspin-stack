@@ -24,8 +24,7 @@ module Cloudspin
       )
         # puts "DEBUG: InstanceConfiguration configuration_values: #{configuration_values}"
         @stack_definition = stack_definition
-        @base_folder = base_folder
-
+        @base_folder = Pathname.new(base_folder).realdirpath.to_s
         @stack_values = configuration_values['stack'] || {}
         @instance_values = configuration_values['instance'] || {}
         @parameter_values = configuration_values['parameters'] || {}
@@ -36,7 +35,7 @@ module Cloudspin
           terraform_backend_configuration_values: configuration_values['terraform_backend'] || {},
           instance_identifier: instance_identifier,
           stack_name: stack_name,
-          base_folder: base_folder
+          base_folder: @base_folder
         )
       end
 

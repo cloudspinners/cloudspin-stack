@@ -4,8 +4,8 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
   let(:terraform_runner) {
     Cloudspin::Stack::Terraform.new(
       working_folder: stack_instance.working_folder,
-      terraform_variables: stack_instance.terraform_variables,
-      terraform_init_arguments: stack_instance.terraform_init_arguments
+      terraform_init_arguments: stack_instance.terraform_init_arguments,
+      terraform_command_arguments: stack_instance.terraform_command_arguments
     )
   }
 
@@ -80,6 +80,10 @@ RSpec.describe 'Cloudspin::Stack::Terraform' do
 
     it 'does not pass the terraform variables on the command line' do
       expect( terraform_runner.plan_dry ).to_not match(/-var/)
+    end
+
+    it 'includes the -state argument for local state' do
+      expect( terraform_runner.plan_dry ).to match(/-state/)
     end
 
   end
