@@ -79,6 +79,13 @@ RSpec.describe 'Stack::Instance' do
       expect(stack_instance.terraform_init_arguments[:backend]).to_not be_nil
     end
 
+    it 'renames the local statefile after migration' do
+      working_copy_folder = stack_instance.prepare
+      stack_instance.after
+      expect(File).to_not exist("#{base_folder}/state/my_stack/my_stack.tfstate")
+      expect(File).to exist("#{base_folder}/state/my_stack/my_stack.tfstate.migrated")
+    end
+
   end
 
 end

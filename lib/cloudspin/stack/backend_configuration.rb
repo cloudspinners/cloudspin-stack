@@ -65,6 +65,12 @@ module Cloudspin
         end
       end
 
+      def after(working_folder:)
+        if migrate_state?
+          disable_local_statefile
+        end
+      end
+
       def add_backend_terraform_file_to(working_folder)
         # puts "DEBUG: Creating file #{working_folder}/_cloudspin_backend.tf"
         File.open("#{working_folder}/_cloudspin_backend.tf", 'w') { |backend_file|
@@ -80,11 +86,15 @@ module Cloudspin
       def create_local_state_folder
         # puts "DEBUG: backend_configuration.create_local_state_folder: #{@local_state_folder}"
         FileUtils.mkdir_p @local_state_folder
-        # Pathname.new(@local_state_folder).realdirpath.to_s
       end
 
       def copy_statefile_to(working_folder)
         FileUtils.copy(@local_statefile, "#{working_folder}/terraform.tfstate")
+      end
+
+      def disable_local_statefile
+        # puts "DEBUG: Renaming local statefile from '#{@local_statefile}' to '#{@local_statefile}.migrated'"
+        FileUtils.move(@local_statefile, "#{@local_statefile}.migrated")
       end
 
       def default_state_key

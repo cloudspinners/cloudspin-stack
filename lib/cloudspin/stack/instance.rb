@@ -73,6 +73,10 @@ module Cloudspin
         @working_folder
       end
 
+      def after
+        @backend_configuration.after(working_folder: working_folder)
+      end
+
       def clean_working_folder
         FileUtils.rm_rf(working_folder)
       end
